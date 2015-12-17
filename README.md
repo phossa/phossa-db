@@ -1,8 +1,22 @@
 # Introduction
 Phossa is a lightweight PHP framework. Phossa-db is db connection, management,
-statistics package.
+statistics package which handles the interaction with db.
 
 # Features
+
+- Multiple databases support
+
+- Db reader/writer support
+
+- Query profiler support
+
+- Event monitoring
+
+  - monitoring schema changes etc.
+
+  - monitoring content changes in table or columns
+
+  - apply application level triggers
 
 - Support PHP 5.4+
 
