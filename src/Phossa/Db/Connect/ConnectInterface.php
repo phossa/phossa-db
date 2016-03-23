@@ -13,30 +13,17 @@
  */
 /*# declare(strict_types=1); */
 
-namespace Phossa\Db\Message;
-
-use Phossa\Shared\Message\MessageAbstract;
+namespace Phossa\Db\Connect;
 
 /**
- * Message class for Phossa\Db
+ * ConnectInterface
  *
+ * @interface
  * @package \Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
- * @see     MessageAbstract
  * @version 1.0.0
  * @since   1.0.0 added
  */
-class Message extends MessageAbstract
+interface ConnectInterface
 {
-    /**#@+
-     * @var   int
-     */
-
-    /**#@-*/
-
-    /**
-     * {@inheritdoc}
-     */
-    protected static $messages = [
-    ];
 }
