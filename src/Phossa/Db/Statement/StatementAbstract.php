@@ -18,7 +18,6 @@ use Phossa\Db\Message\Message;
 use Phossa\Db\Driver\DriverInterface;
 use Phossa\Db\Result\ResultInterface;
 use Phossa\Db\Exception\LogicException;
-use Phossa\Db\Exception\RuntimeException;
 
 /**
  * Statement
