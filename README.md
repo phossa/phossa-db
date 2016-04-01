@@ -12,9 +12,9 @@ the interaction with db.
 It requires PHP 5.4 and supports PHP 7.0+, HHVM. It is compliant with
 [PSR-1][PSR-1], [PSR-2][PSR-2], [PSR-4][PSR-4].
 
-[PSR-1]: http://www.php-fig.org/psr/psr-1/ "PSR-1: Basic Coding Standard"
-[PSR-2]: http://www.php-fig.org/psr/psr-2/ "PSR-2: Coding Style Guide"
-[PSR-4]: http://www.php-fig.org/psr/psr-4/ "PSR-4: Autoloader"
+[PSR-1]: http://www.php-fig.org/psr/psr-1/ "PSR-1: Basic Coding Standard"
+[PSR-2]: http://www.php-fig.org/psr/psr-2/ "PSR-2: Coding Style Guide"
+[PSR-4]: http://www.php-fig.org/psr/psr-4/ "PSR-4: Autoloader"
 
 Features
 ---
@@ -25,11 +25,16 @@ Features
 
   - Connection pool
 
-  - Connection monitoring and fallback
+  - Round-robin
 
-- Automaitc db reader/writer support
+  	Multiple reader connections are used in round-robin fashion(weighted 1-10).
+  	Each connection is monitored and timed with connection time.
 
-- debug mode
+- tag support for driver, enable reader and writer
+
+- db sharding support
+
+- Debug mode
 
   - Query log
 
@@ -67,7 +72,7 @@ Dependencies
 
 - PHP >= 5.4.0
 
-- phossa/phossa-shared 1.*
+- phossa/phossa-shared ~1.0.9
 
 - phossa/phossa-logger 1.* if logging and statistics enabled
 
