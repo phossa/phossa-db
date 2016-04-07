@@ -62,4 +62,24 @@ class Types
 
     /**#@-*/
 
+    /**
+     * bind parameters
+     *
+     * @param  mixed value
+     * @return int
+     * @access public
+     * @static
+     */
+    public static function guessType($value)/*# : int */
+    {
+        if (is_null($value)) {
+            return self::PARAM_NULL;
+        } elseif (is_int($value)) {
+            return self::PARAM_INT;
+        } elseif (is_bool($value)) {
+            return self::PARAM_BOOL;
+        } else {
+            return self::PARAM_STR;
+        }
+    }
 }

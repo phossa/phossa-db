@@ -28,6 +28,39 @@ use Phossa\Db\Exception\InvalidArgumentException;
  *
  * Driver with tag supported. In this case, you can tag with 'ReadOnly' etc.
  *
+ * ```php
+ * $db = new Phossa\Db\Pdo\Driver($conf);
+ *
+ * // example 1: DDL execute(), returns false|int
+ * $res = $db->execute("DELETE FROM test WHERE id < :id", [ 'id' => 10 ]);
+ * if (false === $res) {
+ *     echo $db->getError() . \PHP_EOL;
+ * } else {
+ *     echo sprintf("Deleted %d records", $res) . \PHP_EOL;
+ * }
+ *
+ * // example 2: SELECT query, returns Result object
+ * $res = $db->query("SELECT * FROM test WHERE id < ?", [ 10 ]);
+ * if ($res->isSuccessful()) {
+ *     $rows = $res->fetchAll();
+ * } else {
+ *     echo $res->getError() . \PHP_EOL;
+ * }
+ *
+ * // example 3: prepare statement, get Statement object
+ * $stmt = $db->prepare("SELECT * FROM test WHERE id < :id");
+ * if ($stmt->isSuccessful()) {
+ *     $res = $stmt->execute(['id' => 10]);
+ *     if ($res->isSuccessful()) {
+ *         $rows = $res->fetchAll();
+ *     } else {
+ *         echo $stmt->getError() . \PHP_EOL;
+ *     }
+ * } else {
+ *     echo $stmt->getError() . \PHP_EOL;
+ * }
+ * ```
+ *
  * @abstract
  * @package Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
@@ -46,7 +79,7 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
      * @var    StatementInterface
      * @access protected
      */
-    protected $statement;
+    protected $statement_prototype;
 
     /**
      * Result prototype
@@ -54,35 +87,40 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
      * @var    ResultInterface
      * @access protected
      */
-    protected $result;
+    protected $result_prototype;
 
     /**
-     * Driver constructor
+     * constructor
      *
      * @param  array|resource $connectInfo
-     * @param  StatementInterface $statementPrototype
-     * @param  ResultInterface $resultPrototype
-     * @throws InvalidArgumentException if link type not right
      * @throws LogicException driver specific extension not loaded
+     * @throws InvalidArgumentException if link type not right
      * @access public
      */
-    abstract public function __construct(
-        $connectInfo,
-        StatementInterface $statementPrototype = null,
-        ResultInterface $resultPrototype = null
-    );
+    public function __construct($connectInfo)
+    {
+        // check driver specific extension
+        if (!$this->extensionLoaded()) {
+            throw new LogicException(
+                Message::get(Message::DB_EXTENSION_NOT_LOAD, get_class($this)),
+                Message::DB_EXTENSION_NOT_LOAD
+                );
+        }
 
+        // set connect info
+        $this->setConnect($connectInfo);
+    }
 
     /**
      * {@inheritDoc}
      */
     public function prepare(/*# string */ $sql)/*# : StatementInterface */
     {
-        // statement
-        $statement = clone $this->statement;
+        // clone prototypes
+        $statement = clone $this->statement_prototype;
 
-        // use $statement->isPrepared() to see ok or not
-        return $statement->init($this, $this->result)->prepare($sql);
+        // init statement with current driver and result prototype
+        return $statement($this, $this->result_prototype)->prepare($sql);
     }
 
     /**
@@ -156,28 +194,6 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
             return $this->realLastId($name);
         }
         return null;
-    }
-
-    /**
-     * Set up connection or connection parameters. called by constructor
-     *
-     * @param  array|resource $connectInfo
-     * @throws InvalidArgumentException if link type not right
-     * @throws LogicException driver specific extension not loaded
-     * @access protected
-     */
-    protected function init($connectInfo)
-    {
-        // check driver specific extension
-        if (!$this->extensionLoaded()) {
-            throw new LogicException(
-                Message::get(Message::DB_EXTENSION_NOT_LOAD, get_class($this)),
-                Message::DB_EXTENSION_NOT_LOAD
-            );
-        }
-
-        // set connect
-        $this->setConnect($connectInfo);
     }
 
     /**

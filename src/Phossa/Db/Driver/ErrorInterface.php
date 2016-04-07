@@ -15,46 +15,36 @@
 namespace Phossa\Db\Driver;
 
 /**
- * Transaction related
+ * ErrorInterface
  *
  * @package Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
  * @version 1.0.0
  * @since   1.0.0 added
  */
-interface TransactionInterface
+interface ErrorInterface
 {
     /**
-     * Is in transaction
+     * Is operation successful
      *
      * @return bool
      * @access public
      */
-    public function inTransaction()/*# : bool */;
+    public function isSuccessful()/*# : bool */;
 
     /**
-     * Begin transaction
+     * Get low-level error code
      *
-     * @return this
-     * @throws LogicException if connect failed
+     * @return int
      * @access public
      */
-    public function begin();
+    public function getErrorCode()/*# : int */;
 
     /**
-     * Commit transaction
+     * Get low-level error info
      *
-     * @return this
+     * @return string
      * @access public
      */
-    public function commit();
-
-    /**
-     * Rollback transaction
-     *
-     * @return this
-     * @throws RuntimeException if called before transaction begins
-     * @access public
-     */
-    public function rollback();
+    public function getError()/*# : string */;
 }

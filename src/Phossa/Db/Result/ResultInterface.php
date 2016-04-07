@@ -14,6 +14,7 @@
 
 namespace Phossa\Db\Result;
 
+use Phossa\Db\Driver\ErrorInterface;
 use Phossa\Db\Exception\RuntimeException;
 
 /**
@@ -24,32 +25,8 @@ use Phossa\Db\Exception\RuntimeException;
  * @version 1.0.0
  * @since   1.0.0 added
  */
-interface ResultInterface
+interface ResultInterface extends ErrorInterface
 {
-    /**
-     * Is this a successful result
-     *
-     * @return bool
-     * @access public
-     */
-    public function isSuccessful()/*# : bool */;
-
-    /**
-     * Get low-level error code
-     *
-     * @return int
-     * @access public
-     */
-    public function getErrorCode()/*# : int */;
-
-    /**
-     * Get low-level error info
-     *
-     * @return string
-     * @access public
-     */
-    public function getError()/*# : string */;
-
     /**
      * Is this a query (SELECT) result
      *

@@ -14,9 +14,10 @@
 
 namespace Phossa\Db\Statement;
 
-use Phossa\Db\Driver\DriverInterface;
+use Phossa\Db\Driver\ErrorInterface;
 use Phossa\Db\Result\ResultInterface;
 use Phossa\Db\Exception\LogicException;
+use Phossa\Db\Exception\RuntimeException;
 
 /**
  * StatementInterface
@@ -26,35 +27,15 @@ use Phossa\Db\Exception\LogicException;
  * @version 1.0.0
  * @since   1.0.0 added
  */
-interface StatementInterface
+interface StatementInterface extends ErrorInterface
 {
-    /**
-     * Set the driver and result prototype
-     *
-     * @param  DriverInterface $driver
-     * @param  ResultInterface $resultPrototype
-     * @return this
-     * @access public
-     */
-    public function init(
-        DriverInterface $driver,
-        ResultInterface $resultPrototype
-    );
-
-    /**
-     * Is prepared
-     *
-     * @return bool
-     * @access public
-     */
-    public function isPrepared()/*# : bool */;
-
     /**
      * Prepare the SQL statement
      *
      * @param  string $sql
      * @return this
      * @throws LogicException if connect fail or no driver set
+     * @throws RuntimeException if prepare again
      * @access public
      */
     public function prepare(/*# string */ $sql);

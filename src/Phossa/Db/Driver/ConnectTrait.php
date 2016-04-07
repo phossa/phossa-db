@@ -62,14 +62,24 @@ trait ConnectTrait
             return $this;
         }
 
+        // connect using parameters
         if (empty($this->connect_parameters)) {
             throw new LogicException(
                 Message::get(Message::DB_CONNECT_MISSING),
                 Message::DB_CONNECT_MISSING
             );
         } else {
-            return $this->realConnect($this->connect_parameters);
+            $this->realConnect($this->connect_parameters);
         }
+
+        // set attributes if any
+        if (!empty($this->attributes)) {
+            foreach ($this->attributes as $attr => $val) {
+                $this->realSetAttribute($attr, $val);
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -78,7 +88,7 @@ trait ConnectTrait
     public function disconnect()
     {
         if ($this->isConnected()) {
-            $this->disconnectLink();
+            $this->realDisconnect();
             $this->link = null;
         }
         return $this;
@@ -117,10 +127,10 @@ trait ConnectTrait
      */
     public function setAttribute(/*# int */ $attribute, $value)
     {
+        $this->attributes[$attribute] = $value;
         if ($this->isConnected()) {
             $this->realSetAttribute($attribute, $value);
         }
-        $this->attributes[$attribute] = $value;
         return $this;
     }
 
@@ -142,6 +152,32 @@ trait ConnectTrait
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function isSuccessful()/*# : bool */
+    {
+        return 0 === $this->getErrorCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getErrorCode()/*# : int */
+    {
+        $this->connect();
+        return $this->realErrorCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getError()/*# : string */
+    {
+        $this->connect();
+        return $this->realError();
+    }
+
+    /**
      * Set connect parameters or link
      *
      * @param  array|resource $parameters
@@ -157,10 +193,10 @@ trait ConnectTrait
             } elseif (!$this->setConnectLink($parameters)) {
                 throw new InvalidArgumentException(
                     Message::get(
-                        Message::DB_INVALID_TYPE,
+                        Message::DB_INVALID_DRIVER,
                         gettype($parameters)
                     ),
-                    Message::DB_INVALID_TYPE
+                    Message::DB_INVALID_DRIVER
                 );
             }
             return $this;
@@ -201,7 +237,7 @@ trait ConnectTrait
      * @return this
      * @access protected
      */
-    abstract protected function disconnectLink();
+    abstract protected function realDisconnect();
 
     /**
      * Driver related ping
@@ -229,4 +265,20 @@ trait ConnectTrait
      * @access protected
      */
     abstract protected function realGetAttribute(/*# int */ $attribute);
+
+    /**
+     * Get connection specific error code
+     *
+     * @return int
+     * @access protected
+     */
+    abstract protected function realErrorCode()/*# : int */;
+
+    /**
+     * Get connection specific error message
+     *
+     * @return string
+     * @access protected
+     */
+    abstract protected function realError()/*# : string */;
 }

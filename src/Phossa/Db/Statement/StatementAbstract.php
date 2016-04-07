@@ -15,9 +15,10 @@
 namespace Phossa\Db\Statement;
 
 use Phossa\Db\Message\Message;
+use Phossa\Db\Driver\ErrorTrait;
 use Phossa\Db\Driver\DriverInterface;
 use Phossa\Db\Result\ResultInterface;
-use Phossa\Db\Exception\LogicException;
+use Phossa\Db\Exception\RuntimeException;
 
 /**
  * Statement
@@ -31,21 +32,15 @@ use Phossa\Db\Exception\LogicException;
  */
 abstract class StatementAbstract implements StatementInterface
 {
-    /**
-     * Is this statement prepared
-     *
-     * @var    bool
-     * @access protected
-     */
-    protected $prepared = false;
+    use ErrorTrait;
 
     /**
-     * The driver
+     * Is this statement prepared(OK)
      *
-     * @var    DriverInterface
+     * @var    null|resource
      * @access protected
      */
-    protected $driver;
+    protected $prepared;
 
     /**
      * Result prototype
@@ -53,26 +48,45 @@ abstract class StatementAbstract implements StatementInterface
      * @var    ResultInterface
      * @access protected
      */
-    protected $result;
+    protected $result_prototype;
 
     /**
-     * {@inheritDoc}
+     * Destructor
+     *
+     * @access public
      */
-    public function init(
+    public function __destruct()
+    {
+        if ($this->isSuccessful()) {
+            $this->realDestruct();
+        }
+    }
+
+    /**
+     * Set driver and result
+     *
+     * @param  DriverInterface $driver
+     * @param  ResultInterface $result_prototype
+     * @return this
+     * @access public
+     */
+    public function __invoke(
         DriverInterface $driver,
-        ResultInterface $resultPrototype
+        ResultInterface $result_prototype
     ) {
-        $this->driver = $driver;
-        $this->result = $resultPrototype;
+        $this->setDriver($driver);
+        $this->result_prototype = $result_prototype;
         return $this;
     }
 
     /**
+     * Override isSuccessful in ErrorTrait
+     *
      * {@inheritDoc}
      */
-    public function isPrepared()/*# : bool */
+    public function isSuccessful()/*# : bool */
     {
-        return $this->prepared;
+        return null === $this->prepared ? false : true;
     }
 
     /**
@@ -80,22 +94,23 @@ abstract class StatementAbstract implements StatementInterface
      */
     public function prepare(/*# string */ $sql)
     {
-        $this->prepared = false;
-
-        if ($this->driver) {
-            // get link first
-            $link = $this->driver->getLink();
-
-            // driver specific prepare
-            $this->prepared = $this->realPrepare($link, $sql);
-
-            return $this;
-        } else {
-            throw new LogicException(
-                Message::get(Message::DB_SQL_NO_DRIVER),
-                Message::DB_SQL_NO_DRIVER
+        // can not prepare twice
+        if (null !== $this->prepared) {
+            throw new RuntimeException(
+                Message::get(Message::DB_SQL_PREPARED_TWICE),
+                Message::DB_SQL_PREPARED_TWICE
             );
         }
+
+        $stmt = $this->realPrepare(
+            $this->getDriver()->getLink(),
+            (string) $sql
+        );
+
+        if ($stmt) {
+            $this->prepared = $stmt;
+        }
+        return $this;
     }
 
     /**
@@ -103,37 +118,43 @@ abstract class StatementAbstract implements StatementInterface
      */
     public function execute(array $parameters = [])/*# : ResultInterface */
     {
-        $result = clone $this->result;
-        if ($this->isPrepared()) {
-            $this->realExecute($parameters, $result);
+        $result = clone $this->result_prototype;
+        $link   = $this->getDriver()->getLink();
+
+        // init result
+        $result($link, $this->prepared);
+
+        // execute statement
+        if ($this->isSuccessful()) {
+            $this->realExecute($parameters);
         }
+
         return $result;
     }
-
 
     /**
      * Driver specific prepare statement
      *
-     * @param  resource $link
+     * @param  resource $link db link resource
      * @param  string $sql
-     * @return bool
+     * @return resource|false
      * @access protected
      */
-    abstract protected function realPrepare(
-        $link,
-        /*# string */ $sql
-    )/*# : bool */;
+    abstract protected function realPrepare($link, /*# string */ $sql);
 
     /**
      * Driver specific statement execution
      *
      * @param  array $parameters
-     * @param  ResultInterface $result
      * @return void
      * @access protected
      */
-    abstract protected function realExecute(
-        array $parameters,
-        ResultInterface $result
-    )/*# : ResultInterface */;
+    abstract protected function realExecute(array $parameters);
+
+    /**
+     * Driver specific destruction
+     *
+     * @access protected
+     */
+    abstract protected function realDestruct();
 }

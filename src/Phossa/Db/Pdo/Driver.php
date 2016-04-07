@@ -15,6 +15,8 @@
 namespace Phossa\Db\Pdo;
 
 use Phossa\Db\Driver\DriverAbstract;
+use Phossa\Db\Result\ResultInterface;
+use Phossa\Db\Statement\StatementInterface;
 
 /**
  * PDO driver
@@ -34,8 +36,33 @@ class Driver extends DriverAbstract
      * @access protected
      */
     protected $attributes = [
-
+        \PDO::ATTR_ERRMODE              => \PDO::ERRMODE_SILENT,
+        \PDO::ATTR_CASE                 => \PDO::CASE_NATURAL,
+        \PDO::ATTR_ORACLE_NULLS         => \PDO::NULL_NATURAL,
+        \PDO::ATTR_DEFAULT_FETCH_MODE   => \PDO::FETCH_ASSOC,
     ];
+
+    /**
+     * Driver constructor
+     *
+     * @param  array|resource $connectInfo
+     * @param  StatementInterface $statementPrototype
+     * @param  ResultInterface $resultPrototype
+     * @throws InvalidArgumentException if link type not right
+     * @throws LogicException driver specific extension not loaded
+     * @access public
+     */
+    public function __construct(
+        $connectInfo,
+        StatementInterface $statementPrototype = null,
+        ResultInterface $resultPrototype = null
+        ) {
+            parent::__construct($connectInfo);
+
+            // set prototypes
+            $this->statement_prototype = $statementPrototype ?: new Statement();
+            $this->result_prototype = $resultPrototype ?: new Result();
+    }
 
     /**
      * {@inheritDoc}
@@ -94,12 +121,23 @@ class Driver extends DriverAbstract
      */
     protected function realConnect(array $parameters)
     {
-        // @todo
-        $this->link = new \PDO();
+        // default dsn
+        if (!isset($parameters['dsn'])) {
+            $parameters['dsn'] = 'mysql:dbname=test;host=127.0.0.1';
+        }
+
+        $this->link = new \PDO(
+            $parameters['dsn'],
+            isset($parameters['user']) ? $parameters['user'] : 'root',
+            isset($parameters['password']) ? $parameters['password'] : null,
+            isset($parameters['options']) ? $parameters['options'] : null
+        );
 
         // preset attributes
         if (!empty($this->attributes)) {
-
+            foreach ($this->attributes as $attr => $val) {
+                $this->realSetAttribute($attr, $val);
+            }
         }
 
         return $this;
@@ -110,7 +148,7 @@ class Driver extends DriverAbstract
      *
      * {@inheritDoc}
      */
-    protected function disconnectLink()
+    protected function realDisconnect()
     {
         return $this;
     }
@@ -121,7 +159,7 @@ class Driver extends DriverAbstract
     protected function realPing()/*# : bool */
     {
         try {
-            $this->link->query('SELECT 1');
+            return (bool) $this->link->query('SELECT 1');
         } catch (\PDOException $e) {
             return false;
         }
@@ -143,6 +181,23 @@ class Driver extends DriverAbstract
     protected function realGetAttribute(/*# int */ $attribute)
     {
         return $this->link->getAttribute($attribute);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realErrorCode()/*# : int */
+    {
+        $this->link->errorCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realError()/*# : string */
+    {
+        $error = $this->link->errorInfo();
+        return $error[2];
     }
 
     /**

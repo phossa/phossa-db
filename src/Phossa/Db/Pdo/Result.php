@@ -12,12 +12,13 @@
  */
 /*# declare(strict_types=1); */
 
-namespace Phossa\Db\Mysqli;
+namespace Phossa\Db\Pdo;
 
 use Phossa\Db\Result\ResultAbstract;
+use Phossa\Db\Driver\DriverInterface;
 
 /**
- * Mysqli result
+ * Pdo result
  *
  * @package Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
@@ -28,64 +29,37 @@ use Phossa\Db\Result\ResultAbstract;
 class Result extends ResultAbstract
 {
     /**
-     * mysqli link
+     * Pdo link
      *
-     * @var    \mysqli
+     * @var    \PDO
      * @access protected
      */
     protected $link;
 
     /**
-     * mysql result
+     * Pdo statement
      *
-     * @var    \mysqli_stmt
+     * @var    \PDOStatement
      * @access protected
      */
-    protected $result;
+    protected $statement;
 
     /**
-     * Destruct
+     * Invoke to set link and statement
      *
-     * @access public
-     */
-    public function __destruct()
-    {
-        if ($this->result) {
-            $this->result->free_result();
-        }
-    }
-
-    /**
-     * Invoke to set link and result
-     *
-     * @param  \mysqli $link
-     * @param  \mysqli_stmt $result
+     * @param  DriverInterface $driver
+     * @param  \PDOStatement $statement
      * @return this
      * @access public
      */
     public function __invoke(
-        \mysqli $link,
-        \mysqli_stmt $result
+        DriverInterface $driver,
+        \PDOStatement $statement = null
     ) {
-        $this->link = $link;
-        $this->result = $result;
+        $this->setDriver($driver);
+        $this->link = $this->getDriver()->getLink();
+        $this->statement = $statement;
         return $this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getErrorCode()/*# : int */
-    {
-        return $this->link->errno;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getError()/*# : string */
-    {
-        return $this->link->error;
     }
 
     /**
@@ -93,7 +67,7 @@ class Result extends ResultAbstract
      */
     public function fieldCount()/*# : int */
     {
-        return $this->link->field_count;
+        return $this->statement->columnCount();
     }
 
     /**
@@ -101,8 +75,8 @@ class Result extends ResultAbstract
      */
     public function rowCount()/*# : int */
     {
-        if ($this->result) {
-            return $this->result->num_rows;
+        if ($this->statement) {
+            return $this->statement->rowCount();
         }
         return 0;
     }
@@ -115,7 +89,7 @@ class Result extends ResultAbstract
      */
     public function affectedRows()/*# : int */
     {
-        return $this->link->affected_rows;
+        return $this->statement->rowCount();
     }
 
     /**
@@ -123,6 +97,7 @@ class Result extends ResultAbstract
      */
     protected function realFetchAll()/*# : array */
     {
+        return $this->statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -132,13 +107,12 @@ class Result extends ResultAbstract
     {
         $result = [];
         $count  = 0;
-        $this->result->data_seek(0);
         while ($count++ < $rowCount) {
-            $data = $this->result->fetch_assoc();
-            if (null === $data) {
+            $row = $this->statement->fetch(\PDO::FETCH_ASSOC);
+            if (false === $row) {
                 break;
             }
-            $result[] = $data;
+            $result[] = $row;
         }
         return $result;
     }

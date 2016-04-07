@@ -22,7 +22,8 @@
         "phossa/phossa-shared": "~1.0.9"
     },
     "require-dev": {
-        "phpunit/phpunit": "4.*"
+        "phpunit/phpunit": "4.*",
+        "phpunit/phpunit-skeleton-generator": "*"
     },
     "archive": {
         "exclude": ["!vendor", "tests", "*phpunit.xml",  "composer.lock"]

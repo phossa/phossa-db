@@ -29,53 +29,36 @@ use Phossa\Db\Statement\StatementAbstract;
 class Statement extends StatementAbstract
 {
     /**
-     * statement object
-     *
-     * @var    \mysqli_stmt
-     * @access protected
+     * {@inheritDoc}
      */
-    protected $stmt;
-
-    /**
-     * close statement
-     *
-     * @access public
-     */
-    public function __destruct()
+    protected function realPrepare(/*# string */ $sql)
     {
-        if ($this->stmt) {
-            $this->stmt->close();
+        return $this->link->prepare($sql);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realExecute(array $parameters, ResultInterface $result)
+    {
+        /** @var $stmt \mysqli_stmt */
+        $stmt = $this->prepared;
+
+        if (!empty($parameters)) {
+            $stmt->bind_param("s*",  $parameters);
+        }
+
+        if ($stmt->execute()) {
+            $result($this->link, $stmt);
         }
     }
 
     /**
      * {@inheritDoc}
      */
-    protected function realPrepare(
-        $link,
-        /*# string */ $sql
-    )/*# : bool */ {
-        $this->stmt = null;
-
-        /** @var $link \mysqli */
-        $stmt = $link->prepare($sql);
-        if ($stmt) {
-            $this->stmt = $stmt;
-            return true;
-        }
-
-        // failed
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function realExecute(
-        array $parameters,
-        ResultInterface $result
-    )/*# : ResultInterface */ {
-
+    public function realDestruct()
+    {
+        $this->prepared->close();
     }
 }
 

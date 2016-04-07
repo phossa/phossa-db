@@ -49,7 +49,7 @@ class Message extends MessageAbstract
     /**
      * Invalid driver type "%s"
      */
-    const DB_INVALID_TYPE           = 1603251439;
+    const DB_INVALID_DRIVER         = 1603251439;
 
     /**
      * Rollback called before beginning
@@ -81,6 +81,16 @@ class Message extends MessageAbstract
      */
     const DB_CONNECT_MISSING        = 1603251445;
 
+    /**
+     * Invalid db result
+     */
+    const DB_INVALID_RESULT         = 1603251446;
+
+    /**
+     * Can not prepare another statement
+     */
+    const DB_SQL_PREPARED_TWICE     = 1603251447;
+
     /**#@-*/
 
     /**
@@ -90,12 +100,14 @@ class Message extends MessageAbstract
         self::DB_DRIVER_NOTFOUND    => 'DB driver not found',
         self::DB_INVALID_LINK       => 'Invalid DB connect link, %s',
         self::DB_CONNECT_FAIL       => 'DB connect failed "%s" "%s"',
-        self::DB_INVALID_TYPE       => 'Invalid driver type "%s"',
+        self::DB_INVALID_DRIVER     => 'Invalid driver type "%s"',
         self::DB_INVALID_ROLLBACK   => 'Rollback called before beginning',
         self::DB_EXTENSION_NOT_LOAD => 'Extension for "%s" not loaded',
         self::DB_SQL_NOT_QUERY      => '"%s" not a selective query',
         self::DB_SQL_NOT_PREPARED   => 'No statement prepared yet',
         self::DB_SQL_NO_DRIVER      => 'No driver found',
         self::DB_CONNECT_MISSING    => 'Missing connect parameters',
+        self::DB_INVALID_RESULT     => 'Invalid db result',
+        self::DB_SQL_PREPARED_TWICE => 'Can not prepare another statement',
     ];
 }

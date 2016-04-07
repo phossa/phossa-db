@@ -72,7 +72,7 @@ trait TransactionTrait
     public function rollback()
     {
         if ($this->isConnected()) {
-            if (!$this->transaction) {
+            if (!$this->inTransaction()) {
                 throw new RuntimeException(
                     Message::get(Message::DB_INVALID_ROLLBACK),
                     Message::DB_INVALID_ROLLBACK

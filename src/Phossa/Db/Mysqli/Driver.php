@@ -32,18 +32,25 @@ use Phossa\Db\Statement\StatementInterface;
 class Driver extends DriverAbstract
 {
     /**
-     * {@inheritDoc}
+     * Driver constructor
+     *
+     * @param  array|resource $connectInfo
+     * @param  StatementInterface $statementPrototype
+     * @param  ResultInterface $resultPrototype
+     * @throws InvalidArgumentException if link type not right
+     * @throws LogicException driver specific extension not loaded
+     * @access public
      */
     public function __construct(
         $connectInfo,
         StatementInterface $statementPrototype = null,
         ResultInterface $resultPrototype = null
     ) {
-        parent::init($connectInfo);
+        parent::__construct($connectInfo);
 
         // set prototypes
-        $this->statement = $statementPrototype ?: new Statement();
-        $this->result = $resultPrototype ?: new Result();
+        $this->statement_prototype = $statementPrototype ?: new Statement();
+        $this->result_prototype = $resultPrototype ?: new Result();
     }
 
     /**
@@ -151,7 +158,7 @@ class Driver extends DriverAbstract
      *
      * {@inheritDoc}
      */
-    protected function disconnectLink()
+    protected function realDisconnect()
     {
         $this->link->close();
         return $this;
@@ -179,6 +186,23 @@ class Driver extends DriverAbstract
     protected function realGetAttribute(/*# int */ $attribute)
     {
         return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realErrorCode()/*# : int */
+    {
+        $this->link->errorCode();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realError()/*# : string */
+    {
+        $error = $this->link->errorInfo();
+        return $error[2];
     }
 
     /**
