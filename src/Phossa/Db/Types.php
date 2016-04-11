@@ -66,12 +66,15 @@ class Types
      * bind parameters
      *
      * @param  mixed value
+     * @param  int $suggestType suggested type
      * @return int
      * @access public
      * @static
      */
-    public static function guessType($value)/*# : int */
-    {
+    public static function guessType(
+        $value,
+        /*# int */ $suggestType = self::PARAM_STR
+    )/*# : int */ {
         if (is_null($value)) {
             return self::PARAM_NULL;
         } elseif (is_int($value)) {
@@ -79,7 +82,7 @@ class Types
         } elseif (is_bool($value)) {
             return self::PARAM_BOOL;
         } else {
-            return self::PARAM_STR;
+            return $suggestType;
         }
     }
 }

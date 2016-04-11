@@ -62,13 +62,33 @@ class Statement extends StatementAbstract
         }
         self::$previous_statement = $stmt;
 
-        // execute the statement
-        if (!empty($parameters)) {
-            $this->bindParameters($stmt, $parameters);
+        // bind parameters
+        if (!empty($parameters) &&
+            !$this->bindParameters($stmt, $parameters)
+        ) {
+            // bind failure
+            return false;
         }
 
         // execute
-        $stmt->execute();
+        return $stmt->execute();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realError($resource)/*# : string */
+    {
+        $error = $resource->errorInfo();
+        return $error[2];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realErrorCode($resource)/*# : string */
+    {
+        return $resource->errorCode();
     }
 
     /**
@@ -76,9 +96,7 @@ class Statement extends StatementAbstract
      */
     protected function realDestruct()
     {
-        /* @var $stmt \PDOStatement */
-        $stmt = $this->prepared;
-        $stmt->closeCursor();
+        $this->prepared->closeCursor();
     }
 
     /**
@@ -86,17 +104,21 @@ class Statement extends StatementAbstract
      *
      * @param  \PDOStatement $stmt
      * @param  array $parameters
-     * @return this
+     * @return bool
      * @access protected
      */
-    protected function bindParameters(\PDOStatement $stmt, array $parameters)
-    {
+    protected function bindParameters(
+        \PDOStatement $stmt,
+        array $parameters
+    )/*# : bool */ {
         foreach ($parameters as $name => &$value) {
             $type  = Types::guessType($value);
             $param = is_int($name) ? ($name + 1) : $name;
-            $stmt->bindParam($param, $value, $type);
+            if (false === $stmt->bindParam($param, $value, $type)) {
+                return false;
+            }
         }
-        return $this;
+        return true;
     }
 }
 

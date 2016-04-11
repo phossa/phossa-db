@@ -15,8 +15,8 @@
 namespace Phossa\Db\Driver;
 
 use Phossa\Db\Message\Message;
-use Phossa\Db\Exception\InvalidArgumentException;
 use Phossa\Db\Exception\LogicException;
+use Phossa\Db\Exception\InvalidArgumentException;
 
 /**
  * Implementation of ConnectInterface
@@ -69,7 +69,14 @@ trait ConnectTrait
                 Message::DB_CONNECT_MISSING
             );
         } else {
-            $this->realConnect($this->connect_parameters);
+            try {
+                $this->link = $this->realConnect($this->connect_parameters);
+            } catch (\Exception $e) {
+                throw new LogicException(
+                    Message::get(Message::DB_CONNECT_FAIL, $e->getMessage()),
+                    Message::DB_CONNECT_FAIL
+                );
+            }
         }
 
         // set attributes if any
@@ -152,32 +159,6 @@ trait ConnectTrait
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public function isSuccessful()/*# : bool */
-    {
-        return 0 === $this->getErrorCode();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getErrorCode()/*# : int */
-    {
-        $this->connect();
-        return $this->realErrorCode();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getError()/*# : string */
-    {
-        $this->connect();
-        return $this->realError();
-    }
-
-    /**
      * Set connect parameters or link
      *
      * @param  array|resource $parameters
@@ -205,10 +186,10 @@ trait ConnectTrait
                 Message::get(
                     Message::DB_INVALID_LINK,
                     $e->getMessage()
-                    ),
+                ),
                 Message::DB_INVALID_LINK,
                 $e
-                );
+            );
         }
     }
 
@@ -225,7 +206,7 @@ trait ConnectTrait
      * Driver specific connect
      *
      * @param  array $parameters
-     * @return this
+     * @return resource
      * @throws LogicException if connect failed
      * @access protected
      */
@@ -261,24 +242,8 @@ trait ConnectTrait
      * Get connection specific attribute
      *
      * @param  int attribute
-     * @return mixed
+     * @return mixed|null
      * @access protected
      */
     abstract protected function realGetAttribute(/*# int */ $attribute);
-
-    /**
-     * Get connection specific error code
-     *
-     * @return int
-     * @access protected
-     */
-    abstract protected function realErrorCode()/*# : int */;
-
-    /**
-     * Get connection specific error message
-     *
-     * @return string
-     * @access protected
-     */
-    abstract protected function realError()/*# : string */;
 }

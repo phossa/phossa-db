@@ -15,10 +15,11 @@
 namespace Phossa\Db\Statement;
 
 use Phossa\Db\Message\Message;
-use Phossa\Db\Driver\ErrorTrait;
 use Phossa\Db\Driver\DriverInterface;
 use Phossa\Db\Result\ResultInterface;
+use Phossa\Db\Driver\DriverAwareTrait;
 use Phossa\Db\Exception\RuntimeException;
+use Phossa\Db\Driver\DriverAwareInterface;
 
 /**
  * Statement
@@ -30,14 +31,14 @@ use Phossa\Db\Exception\RuntimeException;
  * @version 1.0.0
  * @since   1.0.0 added
  */
-abstract class StatementAbstract implements StatementInterface
+abstract class StatementAbstract implements StatementInterface, DriverAwareInterface
 {
-    use ErrorTrait;
+    use DriverAwareTrait;
 
     /**
-     * Is this statement prepared(OK)
+     * prepared statement
      *
-     * @var    null|resource
+     * @var    resource
      * @access protected
      */
     protected $prepared;
@@ -51,13 +52,29 @@ abstract class StatementAbstract implements StatementInterface
     protected $result_prototype;
 
     /**
-     * Destructor
+     * Constructor
+     *
+     * @param  DriverInterface $driver
+     * @param  ResultInterface $result_prototype
+     * @access public
+     */
+    public function __construct(
+        DriverInterface $driver = null,
+        ResultInterface $result_prototype = null
+    ) {
+        if (null !== $driver) {
+            $this($driver, $result_prototype);
+        }
+    }
+
+    /**
+     * Desctructor
      *
      * @access public
      */
     public function __destruct()
     {
-        if ($this->isSuccessful()) {
+        if ($this->prepared) {
             $this->realDestruct();
         }
     }
@@ -80,56 +97,79 @@ abstract class StatementAbstract implements StatementInterface
     }
 
     /**
-     * Override isSuccessful in ErrorTrait
-     *
      * {@inheritDoc}
      */
-    public function isSuccessful()/*# : bool */
-    {
-        return null === $this->prepared ? false : true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function prepare(/*# string */ $sql)
+    public function prepare(/*# string */ $sql)/*# : bool */
     {
         // can not prepare twice
-        if (null !== $this->prepared) {
+        if ($this->prepared) {
             throw new RuntimeException(
                 Message::get(Message::DB_SQL_PREPARED_TWICE),
                 Message::DB_SQL_PREPARED_TWICE
             );
         }
 
-        $stmt = $this->realPrepare(
+        // flush driver error
+        $this->flushError();
+
+        // prepare statement
+        $this->prepared = $this->realPrepare(
             $this->getDriver()->getLink(),
             (string) $sql
         );
 
-        if ($stmt) {
-            $this->prepared = $stmt;
+        if ($this->prepared) {
+            return true;
         }
-        return $this;
+
+        // error
+        $this->setError($this->getDriver()->getLink());
+        return false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public function execute(array $parameters = [])/*# : ResultInterface */
+    public function execute(array $parameters = [])
     {
-        $result = clone $this->result_prototype;
-        $link   = $this->getDriver()->getLink();
+        if ($this->prepared) {
+            $this->flushError();
 
-        // init result
-        $result($link, $this->prepared);
+            $result = clone $this->result_prototype;
+            $result($this->prepared);
 
-        // execute statement
-        if ($this->isSuccessful()) {
-            $this->realExecute($parameters);
+            // execute
+            if (false === $this->realExecute($parameters)) {
+                $this->setError($this->prepared);
+                return false;
+            }
+            return $result;
         }
+        return false;
+    }
 
-        return $result;
+    /**
+     * Set driver error
+     *
+     * @param  resource $resource
+     * @access protected
+     */
+    protected function setError($resource)
+    {
+        $this->getDriver()->setError(
+            $this->realError($resource),
+            $this->realErrorCode($resource)
+        );
+    }
+
+    /**
+     * flush driver error
+     *
+     * @access protected
+     */
+    protected function flushError()
+    {
+        $this->getDriver()->setError();
     }
 
     /**
@@ -146,10 +186,28 @@ abstract class StatementAbstract implements StatementInterface
      * Driver specific statement execution
      *
      * @param  array $parameters
-     * @return void
+     * @return bool
      * @access protected
      */
-    abstract protected function realExecute(array $parameters);
+    abstract protected function realExecute(array $parameters)/*# : bool */;
+
+    /**
+     * Statement specific error
+     *
+     * @param  resource $resource
+     * @return string
+     * @access protected
+     */
+    abstract protected function realError($resource)/*# : string */;
+
+    /**
+     * Statement specific error code
+     *
+     * @param  resource $resource
+     * @return string
+     * @access protected
+     */
+    abstract protected function realErrorCode($resource)/*# : string */;
 
     /**
      * Driver specific destruction

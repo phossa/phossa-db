@@ -21,11 +21,10 @@ use Phossa\Db\Exception\LogicException;
  *
  * @package Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
- * @see     ErrorInterface
  * @version 1.0.0
  * @since   1.0.0 added
  */
-interface ConnectInterface extends ErrorInterface
+interface ConnectInterface
 {
     /**
      * Connect to the db

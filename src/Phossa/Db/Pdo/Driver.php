@@ -16,6 +16,7 @@ namespace Phossa\Db\Pdo;
 
 use Phossa\Db\Driver\DriverAbstract;
 use Phossa\Db\Result\ResultInterface;
+use Phossa\Db\Exception\LogicException;
 use Phossa\Db\Statement\StatementInterface;
 
 /**
@@ -56,12 +57,12 @@ class Driver extends DriverAbstract
         $connectInfo,
         StatementInterface $statementPrototype = null,
         ResultInterface $resultPrototype = null
-        ) {
-            parent::__construct($connectInfo);
+    ) {
+        parent::__construct($connectInfo);
 
-            // set prototypes
-            $this->statement_prototype = $statementPrototype ?: new Statement();
-            $this->result_prototype = $resultPrototype ?: new Result();
+        // set prototypes
+        $this->statement_prototype = $statementPrototype ?: new Statement();
+        $this->result_prototype = $resultPrototype ?: new Result();
     }
 
     /**
@@ -121,26 +122,12 @@ class Driver extends DriverAbstract
      */
     protected function realConnect(array $parameters)
     {
-        // default dsn
-        if (!isset($parameters['dsn'])) {
-            $parameters['dsn'] = 'mysql:dbname=test;host=127.0.0.1';
-        }
-
-        $this->link = new \PDO(
+        return new \PDO(
             $parameters['dsn'],
-            isset($parameters['user']) ? $parameters['user'] : 'root',
+            isset($parameters['username']) ? $parameters['username'] : 'root',
             isset($parameters['password']) ? $parameters['password'] : null,
             isset($parameters['options']) ? $parameters['options'] : null
         );
-
-        // preset attributes
-        if (!empty($this->attributes)) {
-            foreach ($this->attributes as $attr => $val) {
-                $this->realSetAttribute($attr, $val);
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -160,7 +147,7 @@ class Driver extends DriverAbstract
     {
         try {
             return (bool) $this->link->query('SELECT 1');
-        } catch (\PDOException $e) {
+        } catch (\Exception $e) {
             return false;
         }
         return true;
@@ -181,23 +168,6 @@ class Driver extends DriverAbstract
     protected function realGetAttribute(/*# int */ $attribute)
     {
         return $this->link->getAttribute($attribute);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function realErrorCode()/*# : int */
-    {
-        $this->link->errorCode();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function realError()/*# : string */
-    {
-        $error = $this->link->errorInfo();
-        return $error[2];
     }
 
     /**

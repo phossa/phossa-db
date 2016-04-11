@@ -18,6 +18,7 @@ use Phossa\Db\Types;
 use Phossa\Db\Result\ResultInterface;
 use Phossa\Db\Exception\LogicException;
 use Phossa\Db\Statement\StatementInterface;
+use Phossa\Shared\Error\ErrorAwareInterface;
 
 /**
  * DriverInterface
@@ -27,17 +28,17 @@ use Phossa\Db\Statement\StatementInterface;
  * @version 1.0.0
  * @since   1.0.0 added
  */
-interface DriverInterface extends ConnectInterface, TransactionInterface
+interface DriverInterface extends ConnectInterface, TransactionInterface, ErrorAwareInterface
 {
     /**
      * Prepare the sql and get the statement object
      *
      * @param  string $sql SQL statement
-     * @return StatementInterface
+     * @return StatementInterface|false
      * @throws LogicException if connect failed
      * @access public
      */
-    public function prepare(/*# string */ $sql)/*# : StatementInterface */;
+    public function prepare(/*# string */ $sql);
 
     /**
      * Execute DDL statement, get affected rows or false for failure
@@ -55,14 +56,11 @@ interface DriverInterface extends ConnectInterface, TransactionInterface
      *
      * @param  string $sql SQL statement
      * @param  array $parameters
-     * @return ResultInterface
+     * @return ResultInterface|false
      * @throws LogicException if connect failed
      * @access public
      */
-    public function query(
-        /*# string */ $sql,
-        array $parameters = []
-    )/*# : ResultInterface */;
+    public function query(/*# string */ $sql, array $parameters = []);
 
     /**
      * Quote the string

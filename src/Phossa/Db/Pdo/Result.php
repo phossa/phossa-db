@@ -15,10 +15,9 @@
 namespace Phossa\Db\Pdo;
 
 use Phossa\Db\Result\ResultAbstract;
-use Phossa\Db\Driver\DriverInterface;
 
 /**
- * Pdo result
+ * PDO result
  *
  * @package Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
@@ -29,35 +28,20 @@ use Phossa\Db\Driver\DriverInterface;
 class Result extends ResultAbstract
 {
     /**
-     * Pdo link
-     *
-     * @var    \PDO
-     * @access protected
-     */
-    protected $link;
-
-    /**
-     * Pdo statement
-     *
      * @var    \PDOStatement
      * @access protected
      */
     protected $statement;
 
     /**
-     * Invoke to set link and statement
+     * Invoke to set statement
      *
-     * @param  DriverInterface $driver
      * @param  \PDOStatement $statement
      * @return this
      * @access public
      */
-    public function __invoke(
-        DriverInterface $driver,
-        \PDOStatement $statement = null
-    ) {
-        $this->setDriver($driver);
-        $this->link = $this->getDriver()->getLink();
+    public function __invoke(\PDOStatement $statement)
+    {
         $this->statement = $statement;
         return $this;
     }

@@ -127,7 +127,7 @@ class Driver extends DriverAbstract
         // real connect
         $this->link->real_connect(
             isset($parameters['host']) ? $parameters['host'] : 'localhost',
-            isset($parameters['user']) ? $parameters['user'] : 'root',
+            isset($parameters['username']) ? $parameters['username'] : 'root',
             isset($parameters['password']) ? $parameters['password'] : null,
             isset($parameters['db']) ? $parameters['db'] : null,
             isset($parameters['port']) ? (int) $parameters['port'] : null,

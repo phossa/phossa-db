@@ -18,6 +18,7 @@ use Phossa\Db\Types;
 use Phossa\Db\Message\Message;
 use Phossa\Db\Result\ResultInterface;
 use Phossa\Db\Exception\LogicException;
+use Phossa\Shared\Error\ErrorAwareTrait;
 use Phossa\Shared\Taggable\TaggableTrait;
 use Phossa\Db\Statement\StatementInterface;
 use Phossa\Shared\Taggable\TaggableInterface;
@@ -41,23 +42,23 @@ use Phossa\Db\Exception\InvalidArgumentException;
  *
  * // example 2: SELECT query, returns Result object
  * $res = $db->query("SELECT * FROM test WHERE id < ?", [ 10 ]);
- * if ($res->isSuccessful()) {
- *     $rows = $res->fetchAll();
- * } else {
+ * if (false === $res) {
  *     echo $res->getError() . \PHP_EOL;
+ * } else {
+ *     $rows = $res->fetchAll();
  * }
  *
  * // example 3: prepare statement, get Statement object
  * $stmt = $db->prepare("SELECT * FROM test WHERE id < :id");
- * if ($stmt->isSuccessful()) {
- *     $res = $stmt->execute(['id' => 10]);
- *     if ($res->isSuccessful()) {
- *         $rows = $res->fetchAll();
- *     } else {
- *         echo $stmt->getError() . \PHP_EOL;
- *     }
+ * if (false === $stmt) {
+ *     echo $db->getError() . \PHP_EOL;
  * } else {
- *     echo $stmt->getError() . \PHP_EOL;
+ *     $res = $stmt->execute(['id' => 10]);
+ *     if (false === $res) {
+ *         echo $db->getError() . \PHP_EOL;
+ *     } else {
+ *         $rows = $res->fetchAll();
+ *     }
  * }
  * ```
  *
@@ -66,12 +67,13 @@ use Phossa\Db\Exception\InvalidArgumentException;
  * @author  Hong Zhang <phossa@126.com>
  * @see     DriverInterface
  * @see     TaggableInterface
+ * @see     ErrorAwareInterface
  * @version 1.0.0
  * @since   1.0.0 added
  */
 abstract class DriverAbstract implements DriverInterface, TaggableInterface
 {
-    use TaggableTrait, ConnectTrait, TransactionTrait;
+    use TaggableTrait, ConnectTrait, TransactionTrait, ErrorAwareTrait;
 
     /**
      * Statement prototype
@@ -104,7 +106,7 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
             throw new LogicException(
                 Message::get(Message::DB_EXTENSION_NOT_LOAD, get_class($this)),
                 Message::DB_EXTENSION_NOT_LOAD
-                );
+            );
         }
 
         // set connect info
@@ -114,13 +116,17 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     /**
      * {@inheritDoc}
      */
-    public function prepare(/*# string */ $sql)/*# : StatementInterface */
+    public function prepare(/*# string */ $sql)
     {
         // clone prototypes
         $statement = clone $this->statement_prototype;
 
-        // init statement with current driver and result prototype
-        return $statement($this, $this->result_prototype)->prepare($sql);
+        // prepare
+        if ($statement($this, $this->result_prototype)->prepare($sql)) {
+            return $statement;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -129,7 +135,7 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     public function execute(/*# string */ $sql, array $parameters = [])
     {
         $result = $this->query($sql, $parameters);
-        if ($result->isSuccessful()) {
+        if ($result) {
             return $result->affectedRows();
         } else {
             return false;
@@ -139,11 +145,14 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     /**
      * {@inheritDoc}
      */
-    public function query(
-        /*# string */ $sql,
-        array $parameters = []
-    )/*# : ResultInterface */ {
-        return $this->prepare($sql)->execute($parameters);
+    public function query(/*# string */ $sql, array $parameters = [])
+    {
+        $stmt = $this->prepare($sql);
+        if ($stmt) {
+            return $stmt->execute($parameters);
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -156,33 +165,11 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
         // try connect first
         $this->connect();
 
-        // types we don't quote
-        if (is_null($string)) {
-            return 'NULL';
-        } elseif (is_bool($string)) {
-            return $string ? 'TRUE' : 'FALSE';
-        } elseif (is_int($string)) {
-            return (string) $string;
-        }
+        // guess type with suggestion from $type
+        $guess = Types::guessType($string, $type);
 
-        // string remained
-        switch($type) {
-            case Types::PARAM_NULL:
-                return 'NULL';
-            case Types::PARAM_STMT:
-                return (string) $string;
-            case Types::PARAM_INT:
-                return (string)(int) $string;
-            case Types::PARAM_BOOL:
-                $res = strtolower($string);
-                if ('' === $res) {
-                    return 'FALSE';
-                } else {
-                    return 'f' === $res[0] ? 'FALSE' : 'TRUE';
-                }
-            default :
-                return $this->realQuote((string) $string, $type);
-        }
+        // driver specific quote
+        return $this->realQuote($string, $guess);
     }
 
     /**
@@ -216,13 +203,13 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     /**
      * Driver specific quote
      *
-     * @param  string $string
+     * @param  mixed $string
      * @param  int $type parameter type
      * @return string
      * @access protected
      */
     abstract protected function realQuote(
-        /*# string */ $string,
+        $string,
         /*# int */ $type
     )/*# : string */;
 }

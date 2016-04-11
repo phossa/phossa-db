@@ -14,7 +14,6 @@
 
 namespace Phossa\Db\Result;
 
-use Phossa\Db\Driver\ErrorInterface;
 use Phossa\Db\Exception\RuntimeException;
 
 /**
@@ -25,7 +24,7 @@ use Phossa\Db\Exception\RuntimeException;
  * @version 1.0.0
  * @since   1.0.0 added
  */
-interface ResultInterface extends ErrorInterface
+interface ResultInterface
 {
     /**
      * Is this a query (SELECT) result

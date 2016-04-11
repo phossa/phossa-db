@@ -15,7 +15,6 @@
 namespace Phossa\Db\Result;
 
 use Phossa\Db\Message\Message;
-use Phossa\Db\Driver\ErrorTrait;
 use Phossa\Db\Exception\RuntimeException;
 
 /**
@@ -29,14 +28,11 @@ use Phossa\Db\Exception\RuntimeException;
  */
 abstract class ResultAbstract implements ResultInterface
 {
-    use ErrorTrait;
-
     /**
      * {@inheritDoc}
      */
     public function isQuery()/*# : bool */
     {
-        $this->exceptionIfNotSuccess();
         return 0 !== $this->fieldCount();
     }
 
@@ -95,32 +91,11 @@ abstract class ResultAbstract implements ResultInterface
      */
     protected function exceptionIfNotQuery()
     {
-        // not a valid result
-        $this->exceptionIfNotSuccess();
-
-        // not a SELECT query
         if (!$this->isQuery()) {
             throw new RuntimeException(
                 Message::get(Message::DB_SQL_NOT_QUERY),
                 Message::DB_SQL_NOT_QUERY
             );
-        }
-    }
-
-    /**
-     * Throw exception if not a successful result
-     *
-     * @throws RuntimeException if not successful get a result
-     * @access protected
-     */
-    protected function exceptionIfNotSuccess()
-    {
-        // not a valid result
-        if (!$this->isSuccessful()) {
-            throw new RuntimeException(
-                Message::get(Message::DB_INVALID_RESULT),
-                Message::DB_INVALID_RESULT
-                );
         }
     }
 
