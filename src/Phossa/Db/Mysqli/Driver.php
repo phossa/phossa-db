@@ -38,6 +38,9 @@ class Driver extends DriverAbstract
      * @access protected
      */
     protected $attributes = [
+        'MYSQLI_OPT_CONNECT_TIMEOUT'    => 300,
+        'MYSQLI_OPT_LOCAL_INFILE'       => true,
+        'MYSQLI_INIT_COMMAND'           => '',
     ];
 
     /**
@@ -122,13 +125,13 @@ class Driver extends DriverAbstract
         // set driver specific options
         if (!empty($parameters['options'])) {
             foreach ($parameters['options'] as $option => $value) {
-                if (is_string($option)) {
-                    $option = strtoupper($option);
-                    if (!defined($option)) {
-                        continue;
-                    }
-                    $option = constant($option);
-                }
+                $option = strtoupper($option);
+                $this->attributes[$option] = $value;
+            }
+        }
+        foreach ($this->attributes as $attr => $value) {
+            $option = constant($attr);
+            if (defined($option)) {
                 $this->link->options($option, $value);
             }
         }

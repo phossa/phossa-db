@@ -116,6 +116,7 @@ class Statement extends StatementAbstract
             $type  = Types::guessType($value);
             switch ($type) {
                 case Types::PARAM_INT:
+                case Types::PARAM_BOOL:
                     $types .= 'i';
                     break;
                 default:
