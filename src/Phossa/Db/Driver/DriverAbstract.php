@@ -111,7 +111,7 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
         // set connect info
         try {
             if (is_array($connectInfo)) {
-                $this->connect_connectInfo = $connectInfo;
+                $this->connect_parameters = $connectInfo;
             } elseif (!$this->setConnectLink($connectInfo)) {
                 throw new InvalidArgumentException(
                     Message::get(

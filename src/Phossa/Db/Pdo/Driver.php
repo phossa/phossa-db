@@ -37,10 +37,10 @@ class Driver extends DriverAbstract
      * @access protected
      */
     protected $attributes = [
-        \PDO::ATTR_ERRMODE              => \PDO::ERRMODE_SILENT,
-        \PDO::ATTR_CASE                 => \PDO::CASE_NATURAL,
-        \PDO::ATTR_ORACLE_NULLS         => \PDO::NULL_NATURAL,
-        \PDO::ATTR_DEFAULT_FETCH_MODE   => \PDO::FETCH_ASSOC,
+        'PDO::ATTR_ERRMODE'             => \PDO::ERRMODE_SILENT,
+        'PDO::ATTR_CASE'                => \PDO::CASE_NATURAL,
+        'PDO::ATTR_ORACLE_NULLS'        => \PDO::NULL_NATURAL,
+        'PDO::ATTR_DEFAULT_FETCH_MODE'  => \PDO::FETCH_ASSOC,
     ];
 
     /**
@@ -156,18 +156,33 @@ class Driver extends DriverAbstract
     /**
      * {@inheritDoc}
      */
-    protected function realSetAttribute(/*# int */ $attribute, $value)
+    protected function realSetAttribute(/*# string */ $attribute, $value)
     {
-        $this->link->setAttribute($attribute, $value);
+        if (is_string($attribute)) {
+            $attr = constant($attribute);
+            if (defined($attr)) {
+                $this->link->setAttribute($attr, $value);
+            }
+        } else {
+            $this->link->setAttribute($attribute, $value);
+        }
         return $this;
     }
 
     /**
      * {@inheritDoc}
      */
-    protected function realGetAttribute(/*# int */ $attribute)
+    protected function realGetAttribute(/*# string */ $attribute)
     {
-        return $this->link->getAttribute($attribute);
+        if (is_string($attribute)) {
+            $attr = constant($attribute);
+            if (defined($attr)) {
+                return $this->link->getAttribute($attr);
+            }
+            return null;
+        } else {
+            $this->link->getAttribute($attribute);
+        }
     }
 
     /**

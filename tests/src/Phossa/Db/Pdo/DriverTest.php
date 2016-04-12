@@ -144,15 +144,5 @@ class DriverTest extends \PHPUnit_Framework_TestCase
         $this->object->connect();
         $this->assertTrue($this->invokeMethod('realPing'));
     }
-
-    /**
-     * @covers Phossa\Db\Pod\Driver::realPing()
-     */
-    public function testRealErrorCode()
-    {
-        $this->object->connect();
-        $this->object->query('bingo');
-        var_dump($this->invokeMethod('realErrorCode'));
-    }
 }
 

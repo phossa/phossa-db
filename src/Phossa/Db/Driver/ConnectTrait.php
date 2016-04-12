@@ -131,7 +131,7 @@ trait ConnectTrait
     /**
      * {@inheritDoc}
      */
-    public function setAttribute(/*# int */ $attribute, $value)
+    public function setAttribute(/*# string */ $attribute, $value)
     {
         $this->attributes[$attribute] = $value;
         if ($this->isConnected()) {
@@ -143,7 +143,7 @@ trait ConnectTrait
     /**
      * {@inheritDoc}
      */
-    public function getAttribute(/*# int */ $attribute)
+    public function getAttribute(/*# string */ $attribute)
     {
         // current attribute
         $curr = isset($this->attributes[$attribute]) ?
@@ -186,19 +186,22 @@ trait ConnectTrait
     /**
      * Set connection specific attribute
      *
-     * @param  int attribute
+     * @param  string attribute
      * @param  mixed $value
      * @return $this
      * @access protected
      */
-    abstract protected function realSetAttribute(/*# int */ $attribute, $value);
+    abstract protected function realSetAttribute(
+        /*# string */ $attribute,
+        $value
+    );
 
     /**
      * Get connection specific attribute
      *
-     * @param  int attribute
+     * @param  string attribute
      * @return mixed|null
      * @access protected
      */
-    abstract protected function realGetAttribute(/*# int */ $attribute);
+    abstract protected function realGetAttribute(/*# string */ $attribute);
 }

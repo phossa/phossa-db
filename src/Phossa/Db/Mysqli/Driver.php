@@ -129,10 +129,15 @@ class Driver extends DriverAbstract
                 $this->attributes[$option] = $value;
             }
         }
+
         foreach ($this->attributes as $attr => $value) {
-            $option = constant($attr);
-            if (defined($option)) {
-                $this->link->options($option, $value);
+            if (is_string($attr)) {
+                $option = constant($attr);
+                if (defined($option)) {
+                    $this->link->options($option, $value);
+                }
+            } else {
+                $this->link->options($attr, $value);
             }
         }
 

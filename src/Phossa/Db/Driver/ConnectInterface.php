@@ -71,19 +71,19 @@ interface ConnectInterface
     /**
      * Set connection specific attribute
      *
-     * @param  int attribute
+     * @param  string attribute
      * @param  mixed $value
      * @return this
      * @access public
      */
-    public function setAttribute(/*# int */ $attribute, $value);
+    public function setAttribute(/*# string */ $attribute, $value);
 
     /**
      * Get connection specific attribute
      *
-     * @param  int attribute
+     * @param  string attribute
      * @return mixed
      * @access public
      */
-    public function getAttribute(/*# int */ $attribute);
+    public function getAttribute(/*# string */ $attribute);
 }
