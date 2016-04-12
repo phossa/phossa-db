@@ -27,12 +27,12 @@ use Phossa\Db\Exception\InvalidArgumentException;
 /**
  * DriverAbstract
  *
- * Driver with tag supported. In this case, you can tag with 'ReadOnly' etc.
+ * Driver with TAG supported. In this case, you can tag with 'ReadOnly' etc.
  *
  * ```php
  * $db = new Phossa\Db\Pdo\Driver($conf);
  *
- * // example 1: DDL execute(), returns false|int
+ * // example 1: DDL execute()
  * $res = $db->execute("DELETE FROM test WHERE id < :id", [ 'id' => 10 ]);
  * if (false === $res) {
  *     echo $db->getError() . \PHP_EOL;
@@ -40,15 +40,15 @@ use Phossa\Db\Exception\InvalidArgumentException;
  *     echo sprintf("Deleted %d records", $res) . \PHP_EOL;
  * }
  *
- * // example 2: SELECT query, returns Result object
+ * // example 2: SELECT query
  * $res = $db->query("SELECT * FROM test WHERE id < ?", [ 10 ]);
  * if (false === $res) {
- *     echo $res->getError() . \PHP_EOL;
+ *     echo $db->getError() . \PHP_EOL;
  * } else {
  *     $rows = $res->fetchAll();
  * }
  *
- * // example 3: prepare statement, get Statement object
+ * // example 3: prepare statement
  * $stmt = $db->prepare("SELECT * FROM test WHERE id < :id");
  * if (false === $stmt) {
  *     echo $db->getError() . \PHP_EOL;
@@ -67,7 +67,6 @@ use Phossa\Db\Exception\InvalidArgumentException;
  * @author  Hong Zhang <phossa@126.com>
  * @see     DriverInterface
  * @see     TaggableInterface
- * @see     ErrorAwareInterface
  * @version 1.0.0
  * @since   1.0.0 added
  */
@@ -110,7 +109,28 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
         }
 
         // set connect info
-        $this->setConnect($connectInfo);
+        try {
+            if (is_array($connectInfo)) {
+                $this->connect_connectInfo = $connectInfo;
+            } elseif (!$this->setConnectLink($connectInfo)) {
+                throw new InvalidArgumentException(
+                    Message::get(
+                        Message::DB_INVALID_DRIVER,
+                        gettype($connectInfo)
+                    ),
+                    Message::DB_INVALID_DRIVER
+                );
+            }
+        } catch (\Exception $e) {
+            throw new InvalidArgumentException(
+                Message::get(
+                    Message::DB_INVALID_LINK,
+                    $e->getMessage()
+                ),
+                Message::DB_INVALID_LINK,
+                $e
+            );
+        }
     }
 
     /**
@@ -184,6 +204,20 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     }
 
     /**
+     * {@inheritDoc}
+     */
+    abstract public function getDriverName()/*# : string */;
+
+    /**
+     * Set the link explicitly
+     *
+     * @param  resource $link
+     * @return bool
+     * @access protected
+     */
+    abstract protected function setConnectLink($link)/*# : bool */;
+
+    /**
      * Check driver specific extension loaded or not
      *
      * @return bool
@@ -194,11 +228,11 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     /**
      * Driver specific last inserted id
      *
-     * @param  string $name sequence name
+     * @param  string|null $name sequence name
      * @return string|null
      * @access protected
      */
-    abstract protected function realLastId(/*# string */ $name);
+    abstract protected function realLastId($name);
 
     /**
      * Driver specific quote

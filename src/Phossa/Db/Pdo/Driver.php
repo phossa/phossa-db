@@ -88,7 +88,7 @@ class Driver extends DriverAbstract
     /**
      * {@inheritDoc}
      */
-    protected function realLastId(/*# string */ $name)
+    protected function realLastId($name)
     {
         return $this->link->lastInsertId($name);
     }
@@ -97,7 +97,7 @@ class Driver extends DriverAbstract
      * {@inheritDoc}
      */
     protected function realQuote(
-        /*# string */ $string,
+        $string,
         /*# int */ $type
     )/*# : string */ {
         return $this->link->quote($string, $type);

@@ -31,7 +31,7 @@ use Phossa\Shared\Error\ErrorAwareInterface;
 interface DriverInterface extends ConnectInterface, TransactionInterface, ErrorAwareInterface
 {
     /**
-     * Prepare the sql and get the statement object
+     * Prepare the sql and get the statement object or FALSE on failure
      *
      * @param  string $sql SQL statement
      * @return StatementInterface|false
@@ -41,7 +41,9 @@ interface DriverInterface extends ConnectInterface, TransactionInterface, ErrorA
     public function prepare(/*# string */ $sql);
 
     /**
-     * Execute DDL statement, get affected rows or false for failure
+     * Execute DDL statement
+     *
+     * Get affected row number or FALSE on failure
      *
      * @param  string $sql
      * @param  array $parameters
@@ -52,7 +54,9 @@ interface DriverInterface extends ConnectInterface, TransactionInterface, ErrorA
     public function execute(/*# string */ $sql, array $parameters = []);
 
     /**
-     * Execute the sql with given parameters and return the result object
+     * Execute the sql with given parameters
+     *
+     * Return the result object or FALSE on failure
      *
      * @param  string $sql SQL statement
      * @param  array $parameters
@@ -63,7 +67,7 @@ interface DriverInterface extends ConnectInterface, TransactionInterface, ErrorA
     public function query(/*# string */ $sql, array $parameters = []);
 
     /**
-     * Quote the string
+     * Quote the $string
      *
      * @param  bool|int|string|null $string
      * @param  int $type data type

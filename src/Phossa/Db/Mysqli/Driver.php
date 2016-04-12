@@ -32,6 +32,15 @@ use Phossa\Db\Statement\StatementInterface;
 class Driver extends DriverAbstract
 {
     /**
+     * Default attributes
+     *
+     * @var    array
+     * @access protected
+     */
+    protected $attributes = [
+    ];
+
+    /**
      * Driver constructor
      *
      * @param  array|resource $connectInfo
@@ -72,7 +81,7 @@ class Driver extends DriverAbstract
     /**
      * {@inheritDoc}
      */
-    protected function realLastId(/*# string */ $name)
+    protected function realLastId($name)
     {
         return $this->link->insert_id;
     }
@@ -81,7 +90,7 @@ class Driver extends DriverAbstract
      * {@inheritDoc}
      */
     protected function realQuote(
-        /*# string */ $string,
+        $string,
         /*# int */ $type
     )/*# : string */ {
         return '\'' . $this->link->real_escape_string($string) . '\'';
@@ -186,23 +195,6 @@ class Driver extends DriverAbstract
     protected function realGetAttribute(/*# int */ $attribute)
     {
         return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function realErrorCode()/*# : int */
-    {
-        $this->link->errorCode();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function realError()/*# : string */
-    {
-        $error = $this->link->errorInfo();
-        return $error[2];
     }
 
     /**

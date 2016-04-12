@@ -28,6 +28,7 @@ use Phossa\Db\Driver\DriverAwareInterface;
  * @package Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
  * @see     StatementInterface
+ * @see     DriverAwareInterface
  * @version 1.0.0
  * @since   1.0.0 added
  */
@@ -122,7 +123,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
             return true;
         }
 
-        // error
+        // set driver error
         $this->setError($this->getDriver()->getLink());
         return false;
     }
@@ -133,6 +134,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     public function execute(array $parameters = [])
     {
         if ($this->prepared) {
+            // flush driver error
             $this->flushError();
 
             $result = clone $this->result_prototype;
@@ -140,6 +142,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
 
             // execute
             if (false === $this->realExecute($parameters)) {
+                // set driver error
                 $this->setError($this->prepared);
                 return false;
             }

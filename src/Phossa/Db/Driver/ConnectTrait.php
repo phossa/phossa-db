@@ -16,7 +16,6 @@ namespace Phossa\Db\Driver;
 
 use Phossa\Db\Message\Message;
 use Phossa\Db\Exception\LogicException;
-use Phossa\Db\Exception\InvalidArgumentException;
 
 /**
  * Implementation of ConnectInterface
@@ -157,50 +156,6 @@ trait ConnectTrait
             return $curr;
         }
     }
-
-    /**
-     * Set connect parameters or link
-     *
-     * @param  array|resource $parameters
-     * @return this
-     * @throws InvalidArgumentException if link type not right
-     * @access protected
-     */
-    protected function setConnect($parameters)
-    {
-        try {
-            if (is_array($parameters)) {
-                $this->connect_parameters = $parameters;
-            } elseif (!$this->setConnectLink($parameters)) {
-                throw new InvalidArgumentException(
-                    Message::get(
-                        Message::DB_INVALID_DRIVER,
-                        gettype($parameters)
-                    ),
-                    Message::DB_INVALID_DRIVER
-                );
-            }
-            return $this;
-        } catch (\Exception $e) {
-            throw new InvalidArgumentException(
-                Message::get(
-                    Message::DB_INVALID_LINK,
-                    $e->getMessage()
-                ),
-                Message::DB_INVALID_LINK,
-                $e
-            );
-        }
-    }
-
-    /**
-     * Set the link explicitly
-     *
-     * @param  resource $link
-     * @return bool
-     * @access protected
-     */
-    abstract protected function setConnectLink($link)/*# : bool */;
 
     /**
      * Driver specific connect

@@ -28,20 +28,25 @@ use Phossa\Db\Result\ResultAbstract;
 class Result extends ResultAbstract
 {
     /**
-     * mysqli link
-     *
-     * @var    \mysqli
-     * @access protected
-     */
-    protected $link;
-
-    /**
-     * mysql result
+     * mysql statement
      *
      * @var    \mysqli_stmt
      * @access protected
      */
-    protected $result;
+    protected $statement;
+
+    /**
+     * Invoke to set statement
+     *
+     * @param  \mysqli_stmt $statement
+     * @return this
+     * @access public
+     */
+    public function __invoke(\mysqli_stmt $statement)
+    {
+        $this->statement = $statement;
+        return $this;
+    }
 
     /**
      * Destruct
@@ -56,44 +61,11 @@ class Result extends ResultAbstract
     }
 
     /**
-     * Invoke to set link and result
-     *
-     * @param  \mysqli $link
-     * @param  \mysqli_stmt $result
-     * @return this
-     * @access public
-     */
-    public function __invoke(
-        \mysqli $link,
-        \mysqli_stmt $result
-    ) {
-        $this->link = $link;
-        $this->result = $result;
-        return $this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getErrorCode()/*# : int */
-    {
-        return $this->link->errno;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getError()/*# : string */
-    {
-        return $this->link->error;
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function fieldCount()/*# : int */
     {
-        return $this->link->field_count;
+        return $this->statement->field_count;
     }
 
     /**
@@ -101,21 +73,15 @@ class Result extends ResultAbstract
      */
     public function rowCount()/*# : int */
     {
-        if ($this->result) {
-            return $this->result->num_rows;
-        }
-        return 0;
+        return $this->statement->num_rows();
     }
 
     /**
-     * Get affected row count for DDL statement
-     *
-     * @return int
-     * @access public
+     * {@inheritDoc}
      */
     public function affectedRows()/*# : int */
     {
-        return $this->link->affected_rows;
+        return $this->statement->affected_rows;
     }
 
     /**
@@ -123,6 +89,10 @@ class Result extends ResultAbstract
      */
     protected function realFetchAll()/*# : array */
     {
+        $mysqli_result = $this->statement->get_result();
+        $rows = $mysqli_result->fetch_all(\MYSQLI_ASSOC);
+        $mysqli_result->close();
+        return $rows;
     }
 
     /**
@@ -130,16 +100,18 @@ class Result extends ResultAbstract
      */
     protected function realFetchRow($rowCount)/*# : array */
     {
+        $mysqli_result = $this->statement->get_result();
         $result = [];
         $count  = 0;
-        $this->result->data_seek(0);
+        $mysqli_result->data_seek(0);
         while ($count++ < $rowCount) {
-            $data = $this->result->fetch_assoc();
+            $data = $mysqli_result->fetch_assoc();
             if (null === $data) {
                 break;
             }
             $result[] = $data;
         }
+        $mysqli_result->close();
         return $result;
     }
 }

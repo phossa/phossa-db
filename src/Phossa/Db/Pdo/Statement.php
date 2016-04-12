@@ -49,7 +49,7 @@ class Statement extends StatementAbstract
     /**
      * {@inheritDoc}
      */
-    protected function realExecute(array $parameters)
+    protected function realExecute(array $parameters)/*# : bool */
     {
         /* @var $stmt \PDOStatement */
         $stmt = $this->prepared;
@@ -77,6 +77,14 @@ class Statement extends StatementAbstract
     /**
      * {@inheritDoc}
      */
+    protected function realDestruct()
+    {
+        $this->prepared->closeCursor();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     protected function realError($resource)/*# : string */
     {
         $error = $resource->errorInfo();
@@ -89,14 +97,6 @@ class Statement extends StatementAbstract
     protected function realErrorCode($resource)/*# : string */
     {
         return $resource->errorCode();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function realDestruct()
-    {
-        $this->prepared->closeCursor();
     }
 
     /**

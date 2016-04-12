@@ -66,10 +66,7 @@ class Result extends ResultAbstract
     }
 
     /**
-     * Get affected row count for DDL statement
-     *
-     * @return int
-     * @access public
+     * {@inheritDoc}
      */
     public function affectedRows()/*# : int */
     {
