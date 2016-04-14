@@ -29,6 +29,24 @@ use Phossa\Db\Exception\RuntimeException;
 abstract class ResultAbstract implements ResultInterface
 {
     /**
+     * Fetched already
+     *
+     * @var    bool
+     * @access protected
+     */
+    protected $fetched = false;
+
+    /**
+     * Desctructor
+     *
+     * @access public
+     */
+    public function __destruct()
+    {
+        $this->realDestruct();
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function isQuery()/*# : bool */
@@ -42,6 +60,8 @@ abstract class ResultAbstract implements ResultInterface
     public function fetchAll()/*# : array */
     {
         $this->exceptionIfNotQuery();
+        $this->exceptionIfFetchedAlready();
+        $this->fetched = true;
         return $this->realFetchAll();
     }
 
@@ -51,6 +71,8 @@ abstract class ResultAbstract implements ResultInterface
     public function fetchRow(/*# int */ $rowCount = 1)/*# : array */
     {
         $this->exceptionIfNotQuery();
+        $this->exceptionIfFetchedAlready();
+        $this->fetched = true;
         return $this->realFetchRow($rowCount);
     }
 
@@ -100,6 +122,22 @@ abstract class ResultAbstract implements ResultInterface
     }
 
     /**
+     * Throw exception if fetched already
+     *
+     * @throws RuntimeException if fetched already
+     * @access protected
+     */
+    protected function exceptionIfFetchedAlready()
+    {
+        if ($this->fetched) {
+            throw new RuntimeException(
+                Message::get(Message::DB_FETCHED_ALREADY),
+                Message::DB_FETCHED_ALREADY
+            );
+        }
+    }
+
+    /**
      * Driver fetch all
      *
      * @return array
@@ -115,4 +153,11 @@ abstract class ResultAbstract implements ResultInterface
      * @access protected
      */
     abstract protected function realFetchRow($rowCount)/*# : array */;
+
+    /**
+     * Driver specific destruction
+     *
+     * @access protected
+     */
+    abstract protected function realDestruct();
 }

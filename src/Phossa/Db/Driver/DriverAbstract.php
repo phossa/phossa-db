@@ -75,6 +75,22 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     use TaggableTrait, ConnectTrait, TransactionTrait, ErrorAwareTrait;
 
     /**
+     * Current executed SQL
+     *
+     * @var    string
+     * @access protected
+     */
+    protected $sql = '';
+
+    /**
+     * Parameters cache
+     *
+     * @var    array
+     * @access protected
+     */
+    protected $params;
+
+    /**
      * Statement prototype
      *
      * @var    StatementInterface
@@ -143,6 +159,7 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
 
         // prepare
         if ($statement($this, $this->result_prototype)->prepare($sql)) {
+            $this->sql = $sql;
             return $statement;
         } else {
             return false;
@@ -169,9 +186,39 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
     {
         $stmt = $this->prepare($sql);
         if ($stmt) {
+            $this->params = $parameters;
             return $stmt->execute($parameters);
         } else {
             return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSql()
+    {
+        if (empty($this->params)) {
+            return $this->sql;
+        } else {
+            $count  = 0;
+            $params = $this->params;
+            $this->sql = preg_replace_callback(
+                '/\?|\:\w+/',
+                function($m) use ($count, $params) {
+                    if ('?' === $m[0]) {
+                        $res = $params[$count++];
+                    } else {
+                        $res = isset($params[$m[0]]) ? $params[$m[0]] :
+                            $params[substr($m[0],1)];
+                    }
+                    return $this->quote($res);
+                },
+                $this->sql
+            );
+
+            $this->params = [];
+            return $this->sql;
         }
     }
 

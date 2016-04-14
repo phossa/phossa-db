@@ -30,7 +30,7 @@ interface ConnectInterface
      * Connect to the db
      *
      * @return this
-     * @throws LogicException if connect failed
+     * @throws LogicException if connect failed or attribute unknown
      * @access public
      */
     public function connect();
@@ -74,6 +74,7 @@ interface ConnectInterface
      * @param  string attribute
      * @param  mixed $value
      * @return this
+     * @throws LogicException if attribute unknown
      * @access public
      */
     public function setAttribute(/*# string */ $attribute, $value);
@@ -83,6 +84,7 @@ interface ConnectInterface
      *
      * @param  string attribute
      * @return mixed
+     * @throws LogicException if attribute unknown
      * @access public
      */
     public function getAttribute(/*# string */ $attribute);

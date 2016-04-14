@@ -69,19 +69,12 @@ trait ConnectTrait
             );
         } else {
             try {
-                $this->link = $this->realConnect($this->connect_parameters);
+                $this->realConnect($this->connect_parameters);
             } catch (\Exception $e) {
                 throw new LogicException(
                     Message::get(Message::DB_CONNECT_FAIL, $e->getMessage()),
                     Message::DB_CONNECT_FAIL
                 );
-            }
-        }
-
-        // set attributes if any
-        if (!empty($this->attributes)) {
-            foreach ($this->attributes as $attr => $val) {
-                $this->realSetAttribute($attr, $val);
             }
         }
 
@@ -161,7 +154,7 @@ trait ConnectTrait
      * Driver specific connect
      *
      * @param  array $parameters
-     * @return resource
+     * @return this
      * @throws LogicException if connect failed
      * @access protected
      */
@@ -189,6 +182,7 @@ trait ConnectTrait
      * @param  string attribute
      * @param  mixed $value
      * @return $this
+     * @throws LogicException if attribute unknown
      * @access protected
      */
     abstract protected function realSetAttribute(
@@ -201,6 +195,7 @@ trait ConnectTrait
      *
      * @param  string attribute
      * @return mixed|null
+     * @throws LogicException if attribute unknown
      * @access protected
      */
     abstract protected function realGetAttribute(/*# string */ $attribute);

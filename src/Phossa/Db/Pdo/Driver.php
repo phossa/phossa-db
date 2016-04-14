@@ -14,6 +14,7 @@
 
 namespace Phossa\Db\Pdo;
 
+use Phossa\Db\Message\Message;
 use Phossa\Db\Driver\DriverAbstract;
 use Phossa\Db\Result\ResultInterface;
 use Phossa\Db\Exception\LogicException;
@@ -122,12 +123,21 @@ class Driver extends DriverAbstract
      */
     protected function realConnect(array $parameters)
     {
-        return new \PDO(
+        $this->link = new \PDO(
             $parameters['dsn'],
             isset($parameters['username']) ? $parameters['username'] : 'root',
             isset($parameters['password']) ? $parameters['password'] : null,
             isset($parameters['options']) ? $parameters['options'] : null
         );
+
+        // set attributes
+        if (!empty($this->attributes)) {
+            foreach ($this->attributes as $attr => $val) {
+                $this->realSetAttribute($attr, $val);
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -159,9 +169,13 @@ class Driver extends DriverAbstract
     protected function realSetAttribute(/*# string */ $attribute, $value)
     {
         if (is_string($attribute)) {
-            $attr = constant($attribute);
-            if (defined($attr)) {
-                $this->link->setAttribute($attr, $value);
+            if (defined($attribute)) {
+                $this->link->setAttribute(constant($attribute), $value);
+            } else {
+                throw new LogicException(
+                    Message::get(Message::DB_UNKNOWN_ATTRIBUTE, $attribute),
+                    Message::DB_UNKNOWN_ATTRIBUTE
+                );
             }
         } else {
             $this->link->setAttribute($attribute, $value);
@@ -175,11 +189,14 @@ class Driver extends DriverAbstract
     protected function realGetAttribute(/*# string */ $attribute)
     {
         if (is_string($attribute)) {
-            $attr = constant($attribute);
-            if (defined($attr)) {
-                return $this->link->getAttribute($attr);
+            if (defined($attribute)) {
+                return $this->link->getAttribute(constant($attribute));
+            } else {
+                throw new LogicException(
+                    Message::get(Message::DB_UNKNOWN_ATTRIBUTE, $attribute),
+                    Message::DB_UNKNOWN_ATTRIBUTE
+                );
             }
-            return null;
         } else {
             $this->link->getAttribute($attribute);
         }

@@ -68,7 +68,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pod\Driver::extensionLoaded()
+     * @covers Phossa\Db\Pdo\Driver::extensionLoaded()
      */
     public function testExtensionLoaded()
     {
@@ -78,7 +78,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     /**
      * Test get driver name
      *
-     * @covers Phossa\Db\Pod\Driver::getDriverName()
+     * @covers Phossa\Db\Pdo\Driver::getDriverName()
      */
     public function testGetDriverName()
     {
@@ -91,7 +91,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pod\Driver::realQuote()
+     * @covers Phossa\Db\Pdo\Driver::realQuote()
      */
     public function testRealQuote()
     {
@@ -128,7 +128,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pod\Driver::setConnectLink()
+     * @covers Phossa\Db\Pdo\Driver::setConnectLink()
      */
     public function testSetConnectLink()
     {
@@ -137,12 +137,178 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pod\Driver::realPing()
+     * @covers Phossa\Db\Pdo\Driver::realPing()
      */
     public function testRealPing()
     {
         $this->object->connect();
         $this->assertTrue($this->invokeMethod('realPing'));
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::realSetAttribute()
+     * @expectedException Phossa\Db\Exception\LogicException
+     * @expectedExceptionMessageRegExp /Unknown attribute/
+     */
+    public function testRealSetAttribute1()
+    {
+        $this->invokeMethod(
+            'realSetAttribute',
+            [ 'test', 'bingo']
+        );
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::realGetAttribute()
+     * @expectedException Phossa\Db\Exception\LogicException
+     * @expectedExceptionMessageRegExp /Unknown attribute/
+     */
+    public function testRealGetAttribute1()
+    {
+        $this->invokeMethod(
+            'realGetAttribute',
+            [ 'test']
+        );
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::realSetAttribute()
+     * @covers Phossa\Db\Pdo\Driver::realGetAttribute()
+     */
+    public function testRealSetAttribute2()
+    {
+        $this->object->connect();
+
+        $this->assertFalse(
+            \PDO::ERRMODE_WARNING ===
+            $this->invokeMethod(
+                'realGetAttribute',
+                [ 'PDO::ATTR_ERRMODE' ]
+            )
+        );
+
+        $this->invokeMethod(
+            'realSetAttribute',
+            [ 'PDO::ATTR_ERRMODE', \PDO::ERRMODE_WARNING ]
+        );
+
+        $this->assertEquals(
+            \PDO::ERRMODE_WARNING,
+            $this->invokeMethod(
+                'realGetAttribute',
+                [ 'PDO::ATTR_ERRMODE' ]
+            )
+        );
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::disConnect()
+     * @covers Phossa\Db\Pdo\Driver::getLink()
+     * @covers Phossa\Db\Pdo\Driver::isConnected()
+     */
+    public function testDisConnect()
+    {
+        $this->assertFalse($this->object->isConnected());
+        $this->object->connect();
+        $this->assertTrue($this->object->getLink() instanceof \PDO);
+        $this->assertTrue($this->object->isConnected());
+        $this->object->disconnect();
+        $this->assertFalse($this->object->isConnected());
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::ping()
+     */
+    public function testPing()
+    {
+        $this->assertFalse($this->object->ping());
+        $this->object->connect();
+        $this->assertTrue($this->object->ping());
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::setAttribute()
+     * @covers Phossa\Db\Pdo\Driver::getAttribute()
+     */
+    public function testSetAttribute()
+    {
+        $this->assertFalse(
+            \PDO::ERRMODE_WARNING ===
+            $this->object->getAttribute('PDO::ATTR_ERRMODE')
+        );
+
+        $this->object->setAttribute('PDO::ATTR_ERRMODE', \PDO::ERRMODE_WARNING);
+
+        $this->assertTrue(
+            \PDO::ERRMODE_WARNING ===
+            $this->object->getAttribute('PDO::ATTR_ERRMODE')
+        );
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::prepare()
+     */
+    public function testPrepare()
+    {
+        $stmt = $this->object->prepare('SELECT ? AS col');
+        $this->assertTrue($stmt instanceof Statement);
+        $res  = $stmt->execute([1]);
+        $this->assertEquals(["1"], $res->fetchCol('col'));
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::execute()
+     * @covers Phossa\Db\Pdo\Driver::getLastInsertId()
+     */
+    public function testExecute()
+    {
+        // successful execute
+        $this->assertTrue(0 === $this->object->execute('
+            DROP TABLE IF EXISTS `bingo`
+        '));
+
+        $sql = <<<EOF
+            CREATE TABLE `bingo` (
+                `grp_id`   INT         NOT NULL AUTO_INCREMENT,
+                `grp_name` VARCHAR(20) NOT NULL DEFAULT '',
+                PRIMARY KEY (`grp_id`)
+            )
+EOF;
+        $this->assertTrue(0 === $this->object->execute($sql));
+
+        $this->assertTrue(1 === $this->object->execute('
+            INSERT INTO `bingo` (`grp_name`) VALUES (?)
+        ', ['wow']));
+
+        $this->assertEquals(1, $this->object->getLastInsertId());
+
+        // failed execute
+        $this->assertTrue(false === $this->object->execute($sql));
+        $this->assertRegExp("/already exists/i", $this->object->getError());
+    }
+
+    /**
+     * @covers Phossa\Db\Pdo\Driver::query()
+     */
+    public function testQuery()
+    {
+        $res = $this->object->query('SELECT ? AS col', [1]);
+        $this->assertEquals(["1"], $res->fetchCol('col'));
+
+        $this->assertEquals(
+            "SELECT '1' AS col",
+            $this->object->getSql()
+        );
+
+        $res = $this->object->query(
+            'SELECT * FROM test WHERE area = :area AND year = :year',
+            ['area' => 'China', 'year' => 2010]
+        );
+
+        $this->assertEquals(
+            "SELECT * FROM test WHERE area = 'China' AND year = '2010'",
+            $this->object->getSql()
+        );
     }
 }
 

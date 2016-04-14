@@ -91,6 +91,16 @@ class Message extends MessageAbstract
      */
     const DB_SQL_PREPARED_TWICE     = 1603251447;
 
+    /**
+     * Unknown attribute "%s"
+     */
+    const DB_UNKNOWN_ATTRIBUTE      = 1603251448;
+
+    /**
+     * Result fetched already
+     */
+    const DB_FETCHED_ALREADY        = 1603251449;
+
     /**#@-*/
 
     /**
@@ -109,5 +119,7 @@ class Message extends MessageAbstract
         self::DB_CONNECT_MISSING    => 'Missing connect parameters',
         self::DB_INVALID_RESULT     => 'Invalid db result',
         self::DB_SQL_PREPARED_TWICE => 'Can not prepare another statement',
+        self::DB_UNKNOWN_ATTRIBUTE  => 'Unknown attribute "%s"',
+        self::DB_FETCHED_ALREADY    => 'Result fetched already',
     ];
 }

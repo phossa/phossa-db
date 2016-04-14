@@ -97,4 +97,14 @@ class Result extends ResultAbstract
         }
         return $result;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realDestruct()
+    {
+        if ($this->statement) {
+            $this->statement->closeCursor();
+        }
+    }
 }

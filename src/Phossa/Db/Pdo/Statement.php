@@ -77,14 +77,6 @@ class Statement extends StatementAbstract
     /**
      * {@inheritDoc}
      */
-    protected function realDestruct()
-    {
-        $this->prepared->closeCursor();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     protected function realError($resource)/*# : string */
     {
         $error = $resource->errorInfo();
@@ -113,7 +105,8 @@ class Statement extends StatementAbstract
     )/*# : bool */ {
         foreach ($parameters as $name => &$value) {
             $type  = Types::guessType($value);
-            $param = is_int($name) ? ($name + 1) : $name;
+            $param = is_int($name) ? ($name + 1) :
+                ($name[0] === ':' ? $name : (':' . $name));
             if (false === $stmt->bindParam($param, $value, $type)) {
                 return false;
             }

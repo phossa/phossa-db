@@ -69,18 +69,6 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     }
 
     /**
-     * Desctructor
-     *
-     * @access public
-     */
-    public function __destruct()
-    {
-        if ($this->prepared) {
-            $this->realDestruct();
-        }
-    }
-
-    /**
      * Set driver and result
      *
      * @param  DriverInterface $driver
@@ -133,10 +121,10 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
      */
     public function execute(array $parameters = [])
     {
-        if ($this->prepared) {
-            // flush driver error
-            $this->flushError();
+        // flush driver error
+        $this->flushError();
 
+        if ($this->prepared) {
             $result = clone $this->result_prototype;
             $result($this->prepared);
 
@@ -147,8 +135,10 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
                 return false;
             }
             return $result;
+        } else {
+            $this->setError(Message::get(Message::DB_SQL_NOT_PREPARED));
+            return false;
         }
-        return false;
     }
 
     /**
@@ -159,10 +149,16 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
      */
     protected function setError($resource)
     {
-        $this->getDriver()->setError(
-            $this->realError($resource),
-            $this->realErrorCode($resource)
-        );
+        if (is_string($resource)) {
+            $this->getDriver()->setError(
+                $resource, -1
+            );
+        } else {
+            $this->getDriver()->setError(
+                $this->realError($resource),
+                $this->realErrorCode($resource)
+            );
+        }
     }
 
     /**
@@ -211,11 +207,4 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
      * @access protected
      */
     abstract protected function realErrorCode($resource)/*# : string */;
-
-    /**
-     * Driver specific destruction
-     *
-     * @access protected
-     */
-    abstract protected function realDestruct();
 }
