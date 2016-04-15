@@ -55,7 +55,7 @@ class Result extends ResultAbstract
      * Invoke to set statement
      *
      * @param  \mysqli_stmt $statement
-     * @return self
+     * @return $this
      * @access public
      */
     public function __invoke(\mysqli_stmt $statement)

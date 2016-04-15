@@ -30,7 +30,7 @@ interface DriverAwareInterface
      * Set the driver
      *
      * @param  DriverInterface $driver
-     * @return self
+     * @return $this
      * @access public
      */
     public function setDriver(DriverInterface $driver);

@@ -81,7 +81,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
      *
      * @param  DriverInterface $driver
      * @param  ResultInterface $result_prototype
-     * @return self
+     * @return $this
      * @access public
      */
     public function __invoke(

@@ -35,7 +35,7 @@ interface TransactionInterface
     /**
      * Begin transaction
      *
-     * @return self
+     * @return $this
      * @throws LogicException if connect failed
      * @access public
      */
@@ -44,7 +44,7 @@ interface TransactionInterface
     /**
      * Commit transaction
      *
-     * @return self
+     * @return $this
      * @access public
      */
     public function commit();
@@ -52,7 +52,7 @@ interface TransactionInterface
     /**
      * Rollback transaction
      *
-     * @return self
+     * @return $this
      * @throws RuntimeException if called before transaction begins
      * @access public
      */

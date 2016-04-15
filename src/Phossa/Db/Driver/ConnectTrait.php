@@ -154,7 +154,7 @@ trait ConnectTrait
      * Driver specific connect
      *
      * @param  array $parameters
-     * @return self
+     * @return $this
      * @throws LogicException if connect failed
      * @access protected
      */
@@ -163,7 +163,7 @@ trait ConnectTrait
     /**
      * Driver specific disconnect
      *
-     * @return self
+     * @return $this
      * @access protected
      */
     abstract protected function realDisconnect();

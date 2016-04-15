@@ -29,7 +29,7 @@ interface ConnectInterface
     /**
      * Connect to the db
      *
-     * @return self
+     * @return $this
      * @throws LogicException if connect failed or attribute unknown
      * @access public
      */
@@ -38,7 +38,7 @@ interface ConnectInterface
     /**
      * Disconnect with the db
      *
-     * @return self
+     * @return $this
      * @access public
      */
     public function disconnect();
@@ -73,7 +73,7 @@ interface ConnectInterface
      *
      * @param  string attribute
      * @param  mixed $value
-     * @return self
+     * @return $this
      * @throws LogicException if attribute unknown
      * @access public
      */
