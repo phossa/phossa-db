@@ -110,10 +110,14 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
         $this->flushError();
 
         // prepare statement
-        $this->prepared = $this->realPrepare(
-            $this->getDriver()->getLink(),
-            (string) $sql
-        );
+        try {
+            $this->prepared = $this->realPrepare(
+                $this->getDriver()->getLink(),
+                (string) $sql
+            );
+        } catch (\Exception $e) {
+            $this->prepared = false;
+        }
 
         if ($this->prepared) {
             return true;
@@ -143,11 +147,16 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
             $time = microtime(true);
 
             // execute
-            if (false === $this->realExecute($parameters)) {
-                // set driver error
-                $this->setError($this->prepared);
+            try {
+                if (false === $this->realExecute($parameters)) {
+                    // set driver error
+                    $this->setError($this->prepared);
+                    return false;
+                }
+            } catch (\Exception $e) {
                 return false;
             }
+
             $this->execution_time = microtime(true) - $time;
 
             return $result;
