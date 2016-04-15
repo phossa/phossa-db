@@ -58,7 +58,6 @@ class Statement extends StatementAbstract
         if (null !== self::$previous_statement &&
             self::$previous_statement !== $stmt
         ) {
-            self::$previous_statement->free_result();
             self::$previous_statement->close();
         }
         self::$previous_statement = $stmt;
@@ -71,16 +70,13 @@ class Statement extends StatementAbstract
             return false;
         }
 
-        return $stmt->execute();
-    }
+        $res = $stmt->execute();
 
-    /**
-     * {@inheritDoc}
-     */
-    public function realDestruct()
-    {
-        $this->prepared->free_result();
-        $this->prepared->close();
+        if ($res) {
+            $stmt->store_result();
+        }
+
+        return $res;
     }
 
     /**
@@ -112,8 +108,9 @@ class Statement extends StatementAbstract
         array $parameters
     )/*# : bool */ {
         $types = '';
-        foreach ($parameters as $name => $value) {
-            $type  = Types::guessType($value);
+        $args  = [];
+        foreach ($parameters as $name => &$value) {
+            $type = Types::guessType($value);
             switch ($type) {
                 case Types::PARAM_INT:
                 case Types::PARAM_BOOL:
@@ -123,7 +120,12 @@ class Statement extends StatementAbstract
                     $types .= 's';
                     break;
             }
+            $args[] = &$value;
         }
-        return $stmt->bind_param($types, $parameters);
+        if ($args) {
+            array_unshift($args, $types);
+            return call_user_func_array([$stmt, 'bind_param'], $args);
+        }
+        return true;
     }
 }

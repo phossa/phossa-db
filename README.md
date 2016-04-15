@@ -6,8 +6,8 @@
 
 Introduction
 ---
-phossa-db is PHP db connection management, statistics package which handles
-the interaction with db.
+phossa-db is PHP db connection management library which handles the interaction
+with db.
 
 It requires PHP 5.4 and supports PHP 7.0+, HHVM. It is compliant with
 [PSR-1][PSR-1], [PSR-2][PSR-2], [PSR-4][PSR-4].
@@ -19,26 +19,22 @@ It requires PHP 5.4 and supports PHP 7.0+, HHVM. It is compliant with
 Features
 ---
 
-- Multiple db platform/driver support
+- Simple interface. Nothing you don't need.
 
-- Handles multiple connections at the same time
+- Multiple db platform/driver support, currently PDO (all PDO drivers) and
+  Mysqli.
 
-  - Connection pool
+- Handles multiple connections through driver manager
 
-  - Round-robin
+  - Round-robin load balancing
 
-  	Multiple reader connections are used in round-robin fashion(weighted 1-10).
+  	Multiple db connections are used in round-robin fashion (weighted 1-10).
   	Each connection is monitored and timed with connection time.
 
-- tag support for driver, enable reader and writer
+  - driver tagging, so user can tag different db connection as 'reader' or
+    'writer'
 
-- db sharding support
-
-- Debug mode
-
-  - Query log
-
-  - Query profiling
+- Easy profiling, get each sql and its execution time.
 
 Getting started
 ---
@@ -56,7 +52,7 @@ Getting started
   ```json
   {
       "require": {
-        "phossa/phossa-db": "^1.0.0"
+        "phossa/phossa-db": "1.*"
       }
   }
   ```
@@ -64,7 +60,36 @@ Getting started
 - **Simple usage**
 
   ```php
+  $db = new Phossa\Db\Pdo\Driver($conf);
 
+  // example 1: DDL using execute()
+  $res = $db->execute("DELETE FROM test WHERE id < :id", [ 'id' => 10 ]);
+  if (false === $res) {
+      echo $db->getError() . \PHP_EOL;
+  } else {
+      echo sprintf("Deleted %d records", $res) . \PHP_EOL;
+  }
+
+  // example 2: SELECT query
+  $res = $db->query("SELECT * FROM test WHERE id < ?", [ 10 ]);
+  if (false === $res) {
+      echo $db->getError() . \PHP_EOL;
+  } else {
+      $rows = $res->fetchAll();
+  }
+
+  // example 3: prepare statement
+  $stmt = $db->prepare("SELECT * FROM test WHERE id < :id");
+  if (false === $stmt) {
+      echo $db->getError() . \PHP_EOL;
+  } else {
+      $res = $stmt->execute(['id' => 10]);
+      if (false === $res) {
+         echo $db->getError() . \PHP_EOL;
+      } else {
+         $rows = $res->fetchAll();
+      }
+  }
   ```
 
 Dependencies
@@ -72,9 +97,7 @@ Dependencies
 
 - PHP >= 5.4.0
 
-- phossa/phossa-shared ~1.0.9
-
-- phossa/phossa-logger 1.* if logging and statistics enabled
+- phossa/phossa-shared ~1.0.10
 
 License
 ---

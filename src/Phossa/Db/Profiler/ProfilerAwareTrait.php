@@ -47,7 +47,7 @@ trait ProfilerAwareTrait
     /**
      * {@inheritDoc}
      */
-    public function setProfiler(ProfilerInterface $profiler = null)
+    public function enableProfiling(ProfilerInterface $profiler = null)
     {
         if ($profiler) {
             $this->profiler = $profiler;

@@ -199,7 +199,7 @@ class Driver extends DriverAbstract
                 );
             }
         } else {
-            $this->link->getAttribute($attribute);
+            return $this->link->getAttribute($attribute);
         }
     }
 

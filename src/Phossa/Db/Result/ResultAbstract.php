@@ -37,16 +37,6 @@ abstract class ResultAbstract implements ResultInterface
     protected $fetched = false;
 
     /**
-     * Desctructor
-     *
-     * @access public
-     */
-    public function __destruct()
-    {
-        $this->realDestruct();
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function isQuery()/*# : bool */
@@ -153,11 +143,4 @@ abstract class ResultAbstract implements ResultInterface
      * @access protected
      */
     abstract protected function realFetchRow($rowCount)/*# : array */;
-
-    /**
-     * Driver specific destruction
-     *
-     * @access protected
-     */
-    abstract protected function realDestruct();
 }

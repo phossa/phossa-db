@@ -28,6 +28,22 @@ use Phossa\Db\Result\ResultAbstract;
 class Result extends ResultAbstract
 {
     /**
+     * the column names
+     *
+     * @var    array
+     * @access protected
+     */
+    protected $cols;
+
+    /**
+     * the column values
+     *
+     * @var    array
+     * @access protected
+     */
+    protected $vals;
+
+    /**
      * mysql statement
      *
      * @var    \mysqli_stmt
@@ -46,18 +62,6 @@ class Result extends ResultAbstract
     {
         $this->statement = $statement;
         return $this;
-    }
-
-    /**
-     * Destruct
-     *
-     * @access public
-     */
-    public function __destruct()
-    {
-        if ($this->result) {
-            $this->result->free_result();
-        }
     }
 
     /**
@@ -89,10 +93,16 @@ class Result extends ResultAbstract
      */
     protected function realFetchAll()/*# : array */
     {
-        $mysqli_result = $this->statement->get_result();
-        $rows = $mysqli_result->fetch_all(\MYSQLI_ASSOC);
-        $mysqli_result->close();
-        return $rows;
+        $result = [];
+        while(true) {
+            $row = $this->getOneRow();
+            if ($row) {
+                $result[] = $row;
+            } else {
+                break;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -100,18 +110,54 @@ class Result extends ResultAbstract
      */
     protected function realFetchRow($rowCount)/*# : array */
     {
-        $mysqli_result = $this->statement->get_result();
-        $result = [];
         $count  = 0;
-        $mysqli_result->data_seek(0);
+        $result = [];
         while ($count++ < $rowCount) {
-            $data = $mysqli_result->fetch_assoc();
-            if (null === $data) {
+            $row = $this->getOneRow();
+            if ($row) {
+                $result[] = $row;
+            } else {
                 break;
             }
-            $result[] = $data;
         }
-        $mysqli_result->close();
         return $result;
+    }
+
+    /**
+     * Get one row of data
+     *
+     * @return array|null
+     * @access protected
+     */
+    protected function getOneRow()
+    {
+        if (null === $this->cols) {
+            $result = $this->statement->result_metadata();
+            $this->cols = [];
+
+            // set column name
+            foreach ($result->fetch_fields() as $col) {
+                $this->cols[] = $col->name;
+            }
+
+            // bind values
+            $this->vals = array_fill(0, count($this->cols), null);
+
+            $refs = [];
+            foreach ($this->vals as $i => &$f) {
+                $refs[$i] = &$f;
+            }
+            call_user_func_array([$this->statement, 'bind_result'], $refs);
+        }
+
+        if ($this->statement->fetch()) {
+            $row = [];
+            foreach($this->cols as $i => $col) {
+                $row[$col] = $this->vals[$i];
+            }
+            return $row;
+        }
+
+        return false;
     }
 }

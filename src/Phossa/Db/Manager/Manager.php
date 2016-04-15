@@ -132,7 +132,7 @@ class Manager implements ManagerInterface
         $matched = [];
         foreach ($this->drivers as $id => $driver) {
             // disconnected or tag not match
-            if (!$driver->isConnected() ||
+            if (!$driver->ping() ||
                 '' !== $tag &&
                 (
                     !$driver instanceof TaggableInterface ||

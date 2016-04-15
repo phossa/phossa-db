@@ -35,13 +35,13 @@ interface ProfilerAwareInterface
     public function isProfiling()/*# : bool */;
 
     /**
-     * Set the profile or using the default one
+     * Set the profiler or using the default one
      *
      * @param  ProfilerInterface $profiler
      * @return this
      * @access public
      */
-    public function setProfiler(ProfilerInterface $profiler = null);
+    public function enableProfiling(ProfilerInterface $profiler = null);
 
     /**
      * Get the profiler

@@ -1,6 +1,6 @@
 <?php
 
-namespace Phossa\Db\Pdo;
+namespace Phossa\Db\Mysqli;
 
 use Phossa\Db\Types;
 
@@ -23,7 +23,9 @@ class DriverTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->object = new Driver([
-            'dsn' => 'mysql:dbname=test;host=127.0.0.1;charset=utf8'
+            'db'        => 'test',
+            'host'      => '127.0.0.1',
+            'charset'   => 'utf8'
         ]);
     }
 
@@ -68,7 +70,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::extensionLoaded()
+     * @covers Phossa\Db\Mysqli\Driver::extensionLoaded()
      */
     public function testExtensionLoaded()
     {
@@ -78,20 +80,15 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     /**
      * Test get driver name
      *
-     * @covers Phossa\Db\Pdo\Driver::getDriverName()
+     * @covers Phossa\Db\Mysqli\Driver::getDriverName()
      */
     public function testGetDriverName()
     {
-        // before connect
-        $this->assertEquals('pdo', $this->object->getDriverName());
-
-        // connect
-        $this->object->connect();
-        $this->assertEquals('mysql', $this->object->getDriverName());
+        $this->assertEquals('mysqli', $this->object->getDriverName());
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::realQuote()
+     * @covers Phossa\Db\Mysqli\Driver::realQuote()
      */
     public function testRealQuote()
     {
@@ -128,16 +125,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::setConnectLink()
-     */
-    public function testSetConnectLink()
-    {
-        $pdo = new \PDO('mysql:dbname=test;host=127.0.0.1;charset=utf8', 'root');
-        $this->assertTrue($this->invokeMethod('setConnectLink', [ $pdo ]));
-    }
-
-    /**
-     * @covers Phossa\Db\Pdo\Driver::realPing()
+     * @covers Phossa\Db\Mysqli\Driver::realPing()
      */
     public function testRealPing()
     {
@@ -146,7 +134,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::realSetAttribute()
+     * @covers Phossa\Db\Mysqli\Driver::realSetAttribute()
      * @expectedException Phossa\Db\Exception\LogicException
      * @expectedExceptionMessageRegExp /Unknown attribute/
      */
@@ -159,7 +147,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::realGetAttribute()
+     * @covers Phossa\Db\Mysqli\Driver::realGetAttribute()
      * @expectedException Phossa\Db\Exception\LogicException
      * @expectedExceptionMessageRegExp /Unknown attribute/
      */
@@ -172,52 +160,30 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::realSetAttribute()
-     * @covers Phossa\Db\Pdo\Driver::realGetAttribute()
+     * @covers Phossa\Db\Mysqli\Driver::realSetAttribute()
      */
     public function testRealSetAttribute2()
     {
         $this->object->connect();
-
-        $this->assertFalse(
-            \PDO::ERRMODE_WARNING ===
-            $this->invokeMethod(
-                'realGetAttribute',
-                [ 'PDO::ATTR_ERRMODE' ]
-            )
-        );
-
-        $this->invokeMethod(
-            'realSetAttribute',
-            [ 'PDO::ATTR_ERRMODE', \PDO::ERRMODE_WARNING ]
-        );
-
-        $this->assertEquals(
-            \PDO::ERRMODE_WARNING,
-            $this->invokeMethod(
-                'realGetAttribute',
-                [ 'PDO::ATTR_ERRMODE' ]
-            )
-        );
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::disConnect()
-     * @covers Phossa\Db\Pdo\Driver::getLink()
-     * @covers Phossa\Db\Pdo\Driver::isConnected()
+     * @covers Phossa\Db\Mysqli\Driver::disConnect()
+     * @covers Phossa\Db\Mysqli\Driver::getLink()
+     * @covers Phossa\Db\Mysqli\Driver::isConnected()
      */
     public function testDisConnect()
     {
         $this->assertFalse($this->object->isConnected());
         $this->object->connect();
-        $this->assertTrue($this->object->getLink() instanceof \PDO);
+        $this->assertTrue($this->object->getLink() instanceof \mysqli);
         $this->assertTrue($this->object->isConnected());
         $this->object->disconnect();
         $this->assertFalse($this->object->isConnected());
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::ping()
+     * @covers Phossa\Db\Mysqli\Driver::ping()
      */
     public function testPing()
     {
@@ -227,41 +193,30 @@ class DriverTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::setAttribute()
-     * @covers Phossa\Db\Pdo\Driver::getAttribute()
+     * @covers Phossa\Db\Mysqli\Driver::setAttribute()
      */
     public function testSetAttribute()
     {
-        $this->assertFalse(
-            \PDO::ERRMODE_WARNING ===
-            $this->object->getAttribute('PDO::ATTR_ERRMODE')
-        );
 
-        $this->object->setAttribute('PDO::ATTR_ERRMODE', \PDO::ERRMODE_WARNING);
-
-        $this->assertTrue(
-            \PDO::ERRMODE_WARNING ===
-            $this->object->getAttribute('PDO::ATTR_ERRMODE')
-        );
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::prepare()
+     * @covers Phossa\Db\Mysqli\Driver::prepare()
      */
     public function testPrepare()
     {
         $stmt = $this->object->prepare('SELECT ? AS col');
         $this->assertTrue($stmt instanceof Statement);
-        $res  = $stmt->execute([1]);
-        $this->assertEquals(["1"], $res->fetchCol('col'));
+        $res1 = $stmt->execute([2]);
+        $this->assertEquals(["2"], $res1->fetchCol('col'));
 
         $res2  = $stmt->execute([3]);
         $this->assertEquals(["3"], $res2->fetchCol('col'));
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::execute()
-     * @covers Phossa\Db\Pdo\Driver::getLastInsertId()
+     * @covers Phossa\Db\Mysqli\Driver::execute()
+     * @covers Phossa\Db\Mysqli\Driver::getLastInsertId()
      */
     public function testExecute()
     {
@@ -296,7 +251,7 @@ EOF;
     }
 
     /**
-     * @covers Phossa\Db\Pdo\Driver::query()
+     * @covers Phossa\Db\Mysqli\Driver::query()
      */
     public function testQuery()
     {

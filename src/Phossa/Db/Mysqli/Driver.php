@@ -32,7 +32,7 @@ use Phossa\Db\Statement\StatementInterface;
 class Driver extends DriverAbstract
 {
     /**
-     * Default attributes
+     * Default \mysqli attributes
      *
      * @var    array
      * @access protected
@@ -194,6 +194,18 @@ class Driver extends DriverAbstract
      */
     protected function realSetAttribute(/*# int */ $attribute, $value)
     {
+        if (is_string($attribute)) {
+            if (defined($attribute)) {
+                $this->link->options(constant($attribute), $value);
+            } else {
+                throw new LogicException(
+                    Message::get(Message::DB_UNKNOWN_ATTRIBUTE, $attribute),
+                    Message::DB_UNKNOWN_ATTRIBUTE
+                    );
+            }
+        } else {
+            $this->link->options($attribute, $value);
+        }
         return $this;
     }
 
@@ -202,7 +214,18 @@ class Driver extends DriverAbstract
      */
     protected function realGetAttribute(/*# int */ $attribute)
     {
-        return null;
+        if (is_string($attribute)) {
+            if (defined($attribute)) {
+                return null;
+            } else {
+                throw new LogicException(
+                    Message::get(Message::DB_UNKNOWN_ATTRIBUTE, $attribute),
+                    Message::DB_UNKNOWN_ATTRIBUTE
+                );
+            }
+        } else {
+            return null;
+        }
     }
 
     /**
