@@ -23,7 +23,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->object = new Driver([
-            'db'        => 'test',
+            'db'        => 'mysql',
             'host'      => '127.0.0.1',
             'charset'   => 'utf8'
         ]);
