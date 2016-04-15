@@ -19,7 +19,7 @@
     },
     "require": {
         "php": ">=5.4.0",
-        "phossa/phossa-shared": "~1.0.10"
+        "phossa/phossa-shared": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "4.*",
