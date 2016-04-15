@@ -31,7 +31,7 @@ interface ManagerInterface
      * Add a driver to the pool
      *
      * @param  DriverInterface $driver
-     * @return this
+     * @return self
      * @access public
      */
     public function addDriver(DriverInterface $driver);
@@ -49,7 +49,7 @@ interface ManagerInterface
      * Remove the specified driver from the pool
      *
      * @param  DriverInterface $driver
-     * @return this
+     * @return self
      * @access public
      */
     public function removeDriver(DriverInterface $driver);

@@ -37,7 +37,7 @@ class Result extends ResultAbstract
      * Invoke to set statement
      *
      * @param  \PDOStatement $statement
-     * @return this
+     * @return self
      * @access public
      */
     public function __invoke(\PDOStatement $statement)

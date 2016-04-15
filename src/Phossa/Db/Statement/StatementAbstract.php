@@ -39,7 +39,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     /**
      * prepared statement
      *
-     * @var    resource
+     * @var    mixed
      * @access protected
      */
     protected $prepared;
@@ -58,7 +58,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
      * @var    float
      * @access protected
      */
-    protected $execution_time = 0;
+    protected $execution_time = 0.0;
 
     /**
      * Constructor
@@ -81,7 +81,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
      *
      * @param  DriverInterface $driver
      * @param  ResultInterface $result_prototype
-     * @return this
+     * @return self
      * @access public
      */
     public function __invoke(
@@ -137,7 +137,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
         $this->flushError();
 
         // init execution time
-        $this->execution_time = 0;
+        $this->execution_time = 0.0;
 
         if ($this->prepared) {
             $result = clone $this->result_prototype;
@@ -178,7 +178,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     /**
      * Set driver error
      *
-     * @param  resource $resource
+     * @param  mixed $resource
      * @access protected
      */
     protected function setError($resource)
@@ -208,9 +208,9 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     /**
      * Driver specific prepare statement
      *
-     * @param  resource $link db link resource
+     * @param  mixed $link db link resource
      * @param  string $sql
-     * @return resource|false
+     * @return mixed|false
      * @access protected
      */
     abstract protected function realPrepare($link, /*# string */ $sql);
@@ -227,7 +227,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     /**
      * Statement specific error
      *
-     * @param  resource $resource
+     * @param  mixed $resource
      * @return string
      * @access protected
      */
@@ -236,7 +236,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     /**
      * Statement specific error code
      *
-     * @param  resource $resource
+     * @param  mixed $resource
      * @return string
      * @access protected
      */

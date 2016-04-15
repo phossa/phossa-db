@@ -32,6 +32,14 @@ use Phossa\Db\Statement\StatementInterface;
 class Driver extends DriverAbstract
 {
     /**
+     * the connection link
+     *
+     * @var    \mysqli
+     * @access protected
+     */
+    protected $link;
+
+    /**
      * Default \mysqli attributes
      *
      * @var    array

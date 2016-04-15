@@ -60,7 +60,7 @@ class Profiler implements ProfilerInterface
     {
         // init
         $this->sql = $sql;
-        $this->params = null;
+        $this->params = [];
         $this->execution_time = 0;
 
         return $this;

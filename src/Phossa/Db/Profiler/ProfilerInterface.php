@@ -30,7 +30,7 @@ interface ProfilerInterface extends DriverAwareInterface
      * Set the executing SQL
      *
      * @param  string
-     * @return this
+     * @return self
      * @access public
      */
     public function setSql(/*# string */ $sql);
@@ -39,7 +39,7 @@ interface ProfilerInterface extends DriverAwareInterface
      * Set the parameters
      *
      * @param  array
-     * @return this
+     * @return self
      * @access public
      */
     public function setParameters(array $parameters);
@@ -56,7 +56,7 @@ interface ProfilerInterface extends DriverAwareInterface
      * Set execution time
      *
      * @param  float $time
-     * @return this
+     * @return self
      * @access public
      */
     public function setExecutionTime(/*# float */ $time);

@@ -234,7 +234,7 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface, Pro
     /**
      * Set the link explicitly
      *
-     * @param  resource $link
+     * @param  mixed $link
      * @return bool
      * @access protected
      */
