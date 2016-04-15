@@ -133,6 +133,8 @@ class Result extends ResultAbstract
     {
         if (null === $this->cols) {
             $result = $this->statement->result_metadata();
+            if (false === $result) return false;
+
             $this->cols = [];
 
             // set column name
