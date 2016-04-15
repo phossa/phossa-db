@@ -25,6 +25,22 @@ use Phossa\Shared\Taggable\TaggableInterface;
  * - Added 'weight factor' for round-robin fashion of load balancing
  * - If driver supports tags, may pick driver by tag
  *
+ * ```php
+ * $dbm = new Manager();
+ *
+ * // db writer with weighting factor 1
+ * $dbm->addDriver($driver1->addTag('RW'), 1);
+ *
+ * // db reader with weighting factor 5
+ * $dbm->addDriver($driver2->addTag('RO'), 5);
+ *
+ * // get whatever reader or writer
+ * $db = $dbm->getDriver();
+ *
+ * // get read_only driver
+ * $dbReader = $dbm->getDriver('RO');
+ * ```
+ *
  * @package Phossa\Db
  * @author  Hong Zhang <phossa@126.com>
  * @see     ManagerInterface

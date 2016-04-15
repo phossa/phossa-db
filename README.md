@@ -6,8 +6,8 @@
 
 Introduction
 ---
-phossa-db is PHP db connection management library which handles the interaction
-with db.
+*phossa-db* is a PHP db connection management library which handles the
+interaction with db.
 
 It requires PHP 5.4 and supports PHP 7.0+, HHVM. It is compliant with
 [PSR-1][PSR-1], [PSR-2][PSR-2], [PSR-4][PSR-4].
@@ -28,13 +28,15 @@ Features
 
   - Round-robin load balancing
 
-  	Multiple db connections are used in round-robin fashion (weighted 1-10).
-  	Each connection is monitored and timed with connection time.
+  	Multiple db connections are used in round-robin fashion and weighting factor
+  	(1-10) supported. Each connection is monitored (pinged).
 
   - driver tagging, so user can tag different db connection as 'reader' or
     'writer'
 
-- Easy profiling, get each sql and its execution time.
+- Easy profiling, get each executed sql and its execution time.
+
+- Secure. All SQL executed through prepare/execute in low-level drivers.
 
 Getting started
 ---
@@ -60,9 +62,11 @@ Getting started
 - **Simple usage**
 
   ```php
-  $db = new Phossa\Db\Pdo\Driver($conf);
+  $db = new Phossa\Db\Pdo\Driver([
+      'dsn' => 'mysql:dbname=test;host=127.0.0.1;charset=utf8'
+  ]);
 
-  // example 1: DDL using execute()
+  // DDL using execute()
   $res = $db->execute("DELETE FROM test WHERE id < :id", [ 'id' => 10 ]);
   if (false === $res) {
       echo $db->getError() . \PHP_EOL;
@@ -70,7 +74,7 @@ Getting started
       echo sprintf("Deleted %d records", $res) . \PHP_EOL;
   }
 
-  // example 2: SELECT query
+  // SELECT using query()
   $res = $db->query("SELECT * FROM test WHERE id < ?", [ 10 ]);
   if (false === $res) {
       echo $db->getError() . \PHP_EOL;
@@ -78,7 +82,7 @@ Getting started
       $rows = $res->fetchAll();
   }
 
-  // example 3: prepare statement
+  // PREPARE using prepare()
   $stmt = $db->prepare("SELECT * FROM test WHERE id < :id");
   if (false === $stmt) {
       echo $db->getError() . \PHP_EOL;
@@ -91,6 +95,55 @@ Getting started
       }
   }
   ```
+
+Driver manager
+---
+Driver manager manages multiple db connections. Weighting factor N means add
+one driver virtually N times. Adding driver *A* with factor 5 and adding driver
+*B* with factor 1 into the pool, means when calling `getDriver()`, user will
+get *A* five times vs *B* for one time.
+
+```
+// writable connect 1
+$db1 = (new Phossa\Db\Pdo\Driver($conf1))->addTag('RW');
+
+// dbreader 2
+$db2 = (new Phossa\Db\Pdo\Driver($conf2))->addTag('RO');
+
+// dbreader 3
+$db3 = (new Phossa\Db\Pdo\Driver($conf3))->addTag('RO');
+
+// db manager
+$dbm = (new Phossa\Db\Manager\Manager())
+    ->addDriver($db1, 1)    // writable connection with factor 1
+    ->addDriver($db2, 5)	// read_only, factor 5
+    ->addDriver($db3, 5)	// read_only, factor 5
+
+// get a db connect, no matter writable or read only
+$db = $dbm->getDriver();
+
+// get a readonly driver
+$db = $dbm->getDriver('RO');
+```
+
+SQL profiling
+---
+Get the executed SQL and its execution time.
+
+```php
+// init driver
+$db = new Phossa\Db\Pdo\Driver($conf);
+
+// enable profiling
+$db->enableProfiling();
+
+// execute a DELETE
+$db->execute("DELETE FROM test WHERE test_id > 10");
+
+// get sql
+$sql  = $db->getProfiler()->getSql();
+$time = $db->getProfiler()->getExecutionTime();
+```
 
 Dependencies
 ---
