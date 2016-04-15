@@ -38,7 +38,7 @@ class Driver extends DriverAbstract
      * @access protected
      */
     protected $attributes = [
-        'PDO::ATTR_ERRMODE'             => \PDO::ERRMODE_EXCEPTION,
+        'PDO::ATTR_ERRMODE'             => \PDO::ERRMODE_SILENT,
         'PDO::ATTR_CASE'                => \PDO::CASE_NATURAL,
         'PDO::ATTR_ORACLE_NULLS'        => \PDO::NULL_NATURAL,
         'PDO::ATTR_DEFAULT_FETCH_MODE'  => \PDO::FETCH_ASSOC,
