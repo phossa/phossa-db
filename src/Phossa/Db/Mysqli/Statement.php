@@ -72,7 +72,7 @@ class Statement extends StatementAbstract
 
         $res = $stmt->execute();
 
-        if ($res) {
+        if ($stmt->result_metadata()) {
             $stmt->store_result();
         }
 
