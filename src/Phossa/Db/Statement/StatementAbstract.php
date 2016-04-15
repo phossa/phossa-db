@@ -154,6 +154,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
                     return false;
                 }
             } catch (\Exception $e) {
+                $this->setError($this->prepared);
                 return false;
             }
 
