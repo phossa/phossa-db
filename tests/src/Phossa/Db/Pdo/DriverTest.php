@@ -23,7 +23,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->object = new Driver([
-            'dsn' => 'mysql:dbname=test;host=127.0.0.1;charset=utf8'
+            'dsn' => 'mysql:dbname=mysql;host=127.0.0.1;charset=utf8'
         ]);
     }
 
@@ -132,7 +132,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetConnectLink()
     {
-        $pdo = new \PDO('mysql:dbname=test;host=127.0.0.1;charset=utf8', 'root');
+        $pdo = new \PDO('mysql:dbname=mysql;host=127.0.0.1;charset=utf8', 'root');
         $this->assertTrue($this->invokeMethod('setConnectLink', [ $pdo ]));
     }
 

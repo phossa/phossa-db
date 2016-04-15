@@ -21,7 +21,7 @@ class ResultTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->driver = new Driver([
-            'dsn' => 'mysql:dbname=test;host=127.0.0.1'
+            'dsn' => 'mysql:dbname=mysql;host=127.0.0.1'
         ]);
     }
 
