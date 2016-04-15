@@ -20,8 +20,10 @@ use Phossa\Db\Result\ResultInterface;
 use Phossa\Db\Exception\LogicException;
 use Phossa\Shared\Error\ErrorAwareTrait;
 use Phossa\Shared\Taggable\TaggableTrait;
+use Phossa\Db\Profiler\ProfilerAwareTrait;
 use Phossa\Db\Statement\StatementInterface;
 use Phossa\Shared\Taggable\TaggableInterface;
+use Phossa\Db\Profiler\ProfilerAwareInterface;
 use Phossa\Db\Exception\InvalidArgumentException;
 
 /**
@@ -70,25 +72,9 @@ use Phossa\Db\Exception\InvalidArgumentException;
  * @version 1.0.0
  * @since   1.0.0 added
  */
-abstract class DriverAbstract implements DriverInterface, TaggableInterface
+abstract class DriverAbstract implements DriverInterface, TaggableInterface, ProfilerAwareInterface
 {
-    use TaggableTrait, ConnectTrait, TransactionTrait, ErrorAwareTrait;
-
-    /**
-     * Current executed SQL
-     *
-     * @var    string
-     * @access protected
-     */
-    protected $sql = '';
-
-    /**
-     * Parameters cache
-     *
-     * @var    array
-     * @access protected
-     */
-    protected $params;
+    use TaggableTrait, ConnectTrait, TransactionTrait, ErrorAwareTrait, ProfilerAwareTrait;
 
     /**
      * Statement prototype
@@ -157,9 +143,13 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
         // clone prototypes
         $statement = clone $this->statement_prototype;
 
+        // profiling
+        if ($this->isProfiling()) {
+            $this->getProfiler()->setSql($sql);
+        }
+
         // prepare
         if ($statement($this, $this->result_prototype)->prepare($sql)) {
-            $this->sql = $sql;
             return $statement;
         } else {
             return false;
@@ -184,42 +174,28 @@ abstract class DriverAbstract implements DriverInterface, TaggableInterface
      */
     public function query(/*# string */ $sql, array $parameters = [])
     {
+        // result
+        $result = false;
+
+        // prepare statement
         $stmt = $this->prepare($sql);
+
+        // profiling
+        if ($this->isProfiling()) {
+            $this->getProfiler()->setParameters($parameters);
+        }
+
+        // execute prepared statement
         if ($stmt) {
-            $this->params = $parameters;
-            return $stmt->execute($parameters);
-        } else {
-            return false;
+            $result = $stmt->execute($parameters);
         }
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    public function getSql()
-    {
-        if (empty($this->params)) {
-            return $this->sql;
-        } else {
-            $count  = 0;
-            $params = $this->params;
-            $this->sql = preg_replace_callback(
-                '/\?|\:\w+/',
-                function($m) use ($count, $params) {
-                    if ('?' === $m[0]) {
-                        $res = $params[$count++];
-                    } else {
-                        $res = isset($params[$m[0]]) ? $params[$m[0]] :
-                            $params[substr($m[0],1)];
-                    }
-                    return $this->quote($res);
-                },
-                $this->sql
-            );
-
-            $this->params = [];
-            return $this->sql;
+        // execution time
+        if ($result && $this->isProfiling()) {
+            $this->getProfiler()->setExecutionTime($stmt->getExecutionTime());
         }
+
+        return $result;
     }
 
     /**

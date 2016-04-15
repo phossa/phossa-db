@@ -47,4 +47,12 @@ interface StatementInterface
      * @access public
      */
     public function execute(array $parameters = []);
+
+    /**
+     * Get previous executiion time
+     *
+     * @return float
+     * @access public
+     */
+    public function getExecutionTime()/*# : float */;
 }

@@ -23,7 +23,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->object = new Driver([
-            'dsn' => 'mysql:dbname=test;host=127.0.0.1'
+            'dsn' => 'mysql:dbname=test;host=127.0.0.1;charset=utf8'
         ]);
     }
 
@@ -132,7 +132,7 @@ class DriverTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetConnectLink()
     {
-        $pdo = new \PDO('mysql:dbname=test;host=127.0.0.1', 'root');
+        $pdo = new \PDO('mysql:dbname=test;host=127.0.0.1;charset=utf8', 'root');
         $this->assertTrue($this->invokeMethod('setConnectLink', [ $pdo ]));
     }
 
@@ -292,12 +292,14 @@ EOF;
      */
     public function testQuery()
     {
+        $this->object->setProfiler();
+
         $res = $this->object->query('SELECT ? AS col', [1]);
         $this->assertEquals(["1"], $res->fetchCol('col'));
 
         $this->assertEquals(
             "SELECT '1' AS col",
-            $this->object->getSql()
+            $this->object->getProfiler()->getSql()
         );
 
         $res = $this->object->query(
@@ -307,7 +309,7 @@ EOF;
 
         $this->assertEquals(
             "SELECT * FROM test WHERE area = 'China' AND year = '2010'",
-            $this->object->getSql()
+            $this->object->getProfiler()->getSql()
         );
     }
 }

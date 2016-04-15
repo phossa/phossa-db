@@ -27,7 +27,7 @@ class StatementTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->driver = new Driver([
-            'dsn' => 'mysql:dbname=test;host=127.0.0.1'
+            'dsn' => 'mysql:dbname=test;host=127.0.0.1;charset=utf8'
         ]);
         $this->statement = new Statement($this->driver, new Result());
     }
@@ -109,6 +109,9 @@ class StatementTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecute2()
     {
+        // must emulate
+        $this->driver->setAttribute('PDO::ATTR_EMULATE_PREPARES', true);
+
         $this->statement->prepare("SELECT :idx, :color");
         $res = $this->statement->execute(['idx' => 1, 'color' => 'red']);
         $this->assertEquals([[1 => "1", "red" => "red"]],$res->fetchRow());

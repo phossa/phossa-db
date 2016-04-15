@@ -53,6 +53,14 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     protected $result_prototype;
 
     /**
+     * The execution time
+     *
+     * @var    float
+     * @access protected
+     */
+    protected $execution_time = 0;
+
+    /**
      * Constructor
      *
      * @param  DriverInterface $driver
@@ -124,9 +132,15 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
         // flush driver error
         $this->flushError();
 
+        // init execution time
+        $this->execution_time = 0;
+
         if ($this->prepared) {
             $result = clone $this->result_prototype;
             $result($this->prepared);
+
+            // start time
+            $time = microtime(true);
 
             // execute
             if (false === $this->realExecute($parameters)) {
@@ -134,11 +148,21 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
                 $this->setError($this->prepared);
                 return false;
             }
+            $this->execution_time = microtime(true) - $time;
+
             return $result;
         } else {
             $this->setError(Message::get(Message::DB_SQL_NOT_PREPARED));
             return false;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getExecutionTime()/*# : float */
+    {
+        return (float) $this->execution_time;
     }
 
     /**

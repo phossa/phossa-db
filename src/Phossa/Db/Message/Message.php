@@ -101,6 +101,11 @@ class Message extends MessageAbstract
      */
     const DB_FETCHED_ALREADY        = 1603251449;
 
+    /**
+     * Profiler not set yet
+     */
+    const DB_UNKNOWN_PROFILER       = 1603251450;
+
     /**#@-*/
 
     /**
@@ -121,5 +126,6 @@ class Message extends MessageAbstract
         self::DB_SQL_PREPARED_TWICE => 'Can not prepare another statement',
         self::DB_UNKNOWN_ATTRIBUTE  => 'Unknown attribute "%s"',
         self::DB_FETCHED_ALREADY    => 'Result fetched already',
+        self::DB_UNKNOWN_PROFILER   => 'Profiler not set yet',
     ];
 }

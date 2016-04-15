@@ -67,14 +67,6 @@ interface DriverInterface extends ConnectInterface, TransactionInterface, ErrorA
     public function query(/*# string */ $sql, array $parameters = []);
 
     /**
-     * Get the executed SQL
-     *
-     * @return string
-     * @access public
-     */
-    public function getSql()/*# : string */;
-
-    /**
      * Quote the $string
      *
      * @param  bool|int|string|null $string
