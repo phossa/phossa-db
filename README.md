@@ -59,29 +59,62 @@ Getting started
   }
   ```
 
-- **Simple usage**
+Usage
+---
+
+- Driver
+
+  - DDL using execute()
+
+  	```php
+  	$db = new Phossa\Db\Pdo\Driver([
+        'dsn' => 'mysql:dbname=test;host=127.0.0.1;charset=utf8'
+  	]);
+
+    // simple delete
+  	$res = $db->execute("DELETE FROM test WHERE id < 10");
+  	if (false === $res) {
+      	echo $db->getError() . \PHP_EOL;
+  	} else {
+      	echo sprintf("Deleted %d records", $res) . \PHP_EOL;
+  	}
+
+	// with parameters
+	$res = $db->execute("INSERT INTO test (name) VALUES (?)", [ 100 ]);
+	if ($res) {
+		$id = (int) $db->getLastInsertId();
+	}
+	```
+
+  -- SELECT using query()
+
+  	```php
+  	// simple select
+  	$res = $db->query("SELECT * FROM test WHERE id < 10");
+  	if (false === $res) {
+      	echo $db->getError() . \PHP_EOL;
+  	} else {
+      	$rows = $res->fetchAll();
+  	}
+
+	// with parameters & fetch first 5 rows
+	$res = $db->query("SELECT * FROM test WHERE id > ? LIMIT ?", [10, 20]);
+	if ($res && $res->isQuery()) {
+		$firstFiveRows = $res->fetchRow(5);
+	}
+
+	// fetch first field
+	$res = $db->query("SELECT id, name FROM test WHERE id < :id", ['id' => 10]);
+	if ($res && $res->isQuery()) {
+		$firstCols = $res->fetchCol('id');
+	}
+	```
+
+- Statment
+
+  `Statement` is returned by `$db->prepare()`.
 
   ```php
-  $db = new Phossa\Db\Pdo\Driver([
-      'dsn' => 'mysql:dbname=test;host=127.0.0.1;charset=utf8'
-  ]);
-
-  // DDL using execute()
-  $res = $db->execute("DELETE FROM test WHERE id < :id", [ 'id' => 10 ]);
-  if (false === $res) {
-      echo $db->getError() . \PHP_EOL;
-  } else {
-      echo sprintf("Deleted %d records", $res) . \PHP_EOL;
-  }
-
-  // SELECT using query()
-  $res = $db->query("SELECT * FROM test WHERE id < ?", [ 10 ]);
-  if (false === $res) {
-      echo $db->getError() . \PHP_EOL;
-  } else {
-      $rows = $res->fetchAll();
-  }
-
   // PREPARE using prepare()
   $stmt = $db->prepare("SELECT * FROM test WHERE id < :id");
   if (false === $stmt) {
@@ -92,6 +125,27 @@ Getting started
          echo $db->getError() . \PHP_EOL;
       } else {
          $rows = $res->fetchAll();
+      }
+  }
+  ```
+
+- Result
+
+  `Result` is returned by `$db->execute()`, `$db->query()` or `$stmt->execute()`
+
+  ```php
+  $res = $db->query(...);
+  if ($res) {
+      // SELECT
+      if ($res->isQuery()) {
+          // get fields count
+          $fieldCount = $res->fieldCount();
+          // row count
+          $rowCount   = $res->rowCount();
+
+      // DDL
+      } else {
+          $affectedRows = $res->affectedRows();
       }
   }
   ```

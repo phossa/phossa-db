@@ -29,15 +29,6 @@ use Phossa\Db\Statement\StatementAbstract;
 class Statement extends StatementAbstract
 {
     /**
-     * Prepared statement
-     *
-     * @var    \mysqli_stmt
-     * @access protected
-     * @staticvar
-     */
-    protected static $previous_statement;
-
-    /**
      * {@inheritDoc}
      */
     protected function realPrepare($link, /*# string */ $sql)
@@ -53,14 +44,6 @@ class Statement extends StatementAbstract
     {
         /** @var $stmt \mysqli_stmt */
         $stmt = $this->prepared;
-
-        // save as previous statement
-        if (null !== self::$previous_statement &&
-            self::$previous_statement !== $stmt
-        ) {
-            self::$previous_statement->close();
-        }
-        self::$previous_statement = $stmt;
 
         // bind parameters
         if (!empty($parameters) &&
@@ -93,6 +76,15 @@ class Statement extends StatementAbstract
     protected function realErrorCode($resource)/*# : string */
     {
         return $resource->errno;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function realClose($stmt)
+    {
+        /* @var $stmt \mysqli_stmt */
+        $stmt->close();
     }
 
     /**

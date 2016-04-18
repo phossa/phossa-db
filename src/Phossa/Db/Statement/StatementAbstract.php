@@ -143,6 +143,9 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
             $result = clone $this->result_prototype;
             $result($this->prepared);
 
+            // close previous statement if any
+            $this->closePrevious();
+
             // start time
             $time = microtime(true);
 
@@ -173,6 +176,25 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     public function getExecutionTime()/*# : float */
     {
         return (float) $this->execution_time;
+    }
+
+    /**
+     * Close previous prepared statement
+     *
+     * @return this
+     * @access protected
+     */
+    protected function closePrevious()
+    {
+        static $previous = [];
+
+        $id = spl_object_hash($this->getDriver());
+        if (isset($previous[$id]) && $previous[$id] !== $this->prepared) {
+            $this->realClose($previous[$id]);
+        }
+        $previous[$id] = $this->prepared;
+
+        return $this;
     }
 
     /**
@@ -241,4 +263,12 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
      * @access protected
      */
     abstract protected function realErrorCode($resource)/*# : string */;
+
+    /**
+     * Close statement's result set
+     *
+     * @param  mixed prepared low-level statement
+     * @access protected
+     */
+    abstract protected function realClose($stmt);
 }
