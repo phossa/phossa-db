@@ -51,7 +51,7 @@ class Profiler implements ProfilerInterface
      * @var    float
      * @access protected
      */
-    protected $execution_time = 0;
+    protected $execution_time = 0.0;
 
     /**
      * {@inheritDoc}
@@ -60,8 +60,8 @@ class Profiler implements ProfilerInterface
     {
         // init
         $this->sql = $sql;
-        $this->params = null;
-        $this->execution_time = 0;
+        $this->params = [];
+        $this->execution_time = 0.0;
 
         return $this;
     }

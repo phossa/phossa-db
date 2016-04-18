@@ -38,7 +38,7 @@ interface ProfilerAwareInterface
      * Set the profiler or using the default one
      *
      * @param  ProfilerInterface $profiler
-     * @return this
+     * @return $this
      * @access public
      */
     public function enableProfiling(ProfilerInterface $profiler = null);

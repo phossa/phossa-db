@@ -114,7 +114,7 @@ class Statement extends StatementAbstract
             }
             $args[] = &$value;
         }
-        if ($args) {
+        if (count($args)) {
             array_unshift($args, $types);
             return call_user_func_array([$stmt, 'bind_param'], $args);
         }

@@ -87,7 +87,7 @@ trait TransactionTrait
     /**
      * Driver specific begin transaction
      *
-     * @return this
+     * @return $this
      * @access protected
      */
     abstract protected function realBegin();
@@ -95,7 +95,7 @@ trait TransactionTrait
     /**
      * Driver specific commit
      *
-     * @return this
+     * @return $this
      * @access protected
      */
     abstract protected function realCommit();
@@ -103,7 +103,7 @@ trait TransactionTrait
     /**
      * Driver specific rollback
      *
-     * @return this
+     * @return $this
      * @access protected
      */
     abstract protected function realRollback();

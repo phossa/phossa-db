@@ -32,6 +32,14 @@ use Phossa\Db\Statement\StatementInterface;
 class Driver extends DriverAbstract
 {
     /**
+     * the connection link
+     *
+     * @var    \PDO
+     * @access protected
+     */
+    protected $link;
+
+    /**
      * Default PDO attributes
      *
      * @var    array
@@ -161,7 +169,6 @@ class Driver extends DriverAbstract
         } catch (\Exception $e) {
             return false;
         }
-        return true;
     }
 
     /**

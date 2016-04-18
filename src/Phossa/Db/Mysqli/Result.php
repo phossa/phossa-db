@@ -55,7 +55,7 @@ class Result extends ResultAbstract
      * Invoke to set statement
      *
      * @param  \mysqli_stmt $statement
-     * @return this
+     * @return $this
      * @access public
      */
     public function __invoke(\mysqli_stmt $statement)
@@ -96,7 +96,7 @@ class Result extends ResultAbstract
         $result = [];
         while(true) {
             $row = $this->getOneRow();
-            if ($row) {
+            if (is_array($row)) {
                 $result[] = $row;
             } else {
                 break;
@@ -114,7 +114,7 @@ class Result extends ResultAbstract
         $result = [];
         while ($count++ < $rowCount) {
             $row = $this->getOneRow();
-            if ($row) {
+            if (is_array($row)) {
                 $result[] = $row;
             } else {
                 break;
