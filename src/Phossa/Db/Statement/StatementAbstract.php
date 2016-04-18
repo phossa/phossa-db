@@ -181,7 +181,7 @@ abstract class StatementAbstract implements StatementInterface, DriverAwareInter
     /**
      * Close previous prepared statement
      *
-     * @return self
+     * @return $this
      * @access protected
      */
     protected function closePrevious()
