@@ -86,7 +86,7 @@ Usage
 	}
 	```
 
-  -- SELECT using query()
+  - SELECT using query()
 
   	```php
   	// simple select

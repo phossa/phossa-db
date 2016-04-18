@@ -181,7 +181,7 @@ trait ConnectTrait
      *
      * @param  string attribute
      * @param  mixed $value
-     * @return this
+     * @return self
      * @throws LogicException if attribute unknown
      * @access protected
      */
